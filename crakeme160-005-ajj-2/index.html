@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>CrakeMe160(005)-ajj.2 - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="CrakeMe160(005)-ajj.2" />
+<meta property="og:description" content="我只想做你的太阳 你的太阳 在你的心里呀 在你的心底呀    ——太阳" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/crakeme160-005-ajj-2/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-06-05T15:31:16+00:00" />
+<meta property="article:modified_time" content="2020-06-05T15:31:16+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="CrakeMe160(005)-ajj.2"/>
+<meta name="twitter:description" content="我只想做你的太阳 你的太阳 在你的心里呀 在你的心底呀    ——太阳"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/crakeme160-005-ajj-2/" /><link rel="prev" href="http://example.org/gkctf-writeup/" /><link rel="next" href="http://example.org/introduction-to-the-python-sandbox-and-bytecode/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "CrakeMe160(005)-ajj.2",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/crakeme160-005-ajj-2\/"
+        },"genre": "posts","keywords": "crakeme, wp","wordcount":  1665 ,
+        "url": "http:\/\/example.org\/crakeme160-005-ajj-2\/","datePublished": "2020-06-05T15:31:16+00:00","dateModified": "2020-06-05T15:31:16+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">CrakeMe160(005)-ajj.2</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/reverse/"><i class="far fa-folder fa-fw"></i>reverse</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-06-05">2020-06-05</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1665 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#去壳">去壳</a></li>
+    <li><a href="#dede分析控件">DeDe分析控件</a></li>
+    <li><a href="#搜索关键字">搜索关键字</a></li>
+    <li><a href="#31c">31C</a></li>
+    <li><a href="#304">304</a></li>
+    <li><a href="#308">308</a></li>
+    <li><a href="#310">310</a></li>
+    <li><a href="#318和314">318和314</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>我只想做你的太阳 你的太阳 在你的心里呀 在你的心底呀    ——太阳</p>
+<h1 id="前言">前言</h1>
+<p>这是吾爱破解160crakeme系列里面的第5题，这道题的作者设置了层层关卡，其验证机制简直反人类，只能说这个机制是用来专门考验reverse人员的，那让我们一起来看一看一道题吧。</p>
+<h1 id="破解">破解</h1>
+<h2 id="去壳">去壳</h2>
+<p>程序加了UPX壳，可以手动去壳，也可以用脱壳机。在尝试手动脱壳过程中,dump程序后，程序运行出错，于是就用脱壳机脱壳了。</p>
+<p>UPX脱壳机可以在爱盘里面找到，脱壳完毕我们就开始破解了。</p>
+<h2 id="dede分析控件">DeDe分析控件</h2>
+<p>程序是由Delphi编写的，所以可以用DeDe反编译，得到程序的控件和事件信息。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/cZVHrbOtFofmya5.png"
+        data-srcset="https://i.loli.net/2020/06/05/cZVHrbOtFofmya5.png, https://i.loli.net/2020/06/05/cZVHrbOtFofmya5.png 1.5x, https://i.loli.net/2020/06/05/cZVHrbOtFofmya5.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/cZVHrbOtFofmya5.png"
+        title="image-20200605161102539" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/pHfOEja21c4MwZk.png"
+        data-srcset="https://i.loli.net/2020/06/05/pHfOEja21c4MwZk.png, https://i.loli.net/2020/06/05/pHfOEja21c4MwZk.png 1.5x, https://i.loli.net/2020/06/05/pHfOEja21c4MwZk.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/pHfOEja21c4MwZk.png"
+        title="image-20200605161114245" /></p>
+<h2 id="搜索关键字">搜索关键字</h2>
+<p>搜索关键词，查找关键代码。这里我在IDA中搜索'&ldquo;注册&quot;得到下面的结果。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/4KrE8MdBvmCi1xY.png"
+        data-srcset="https://i.loli.net/2020/06/05/4KrE8MdBvmCi1xY.png, https://i.loli.net/2020/06/05/4KrE8MdBvmCi1xY.png 1.5x, https://i.loli.net/2020/06/05/4KrE8MdBvmCi1xY.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/4KrE8MdBvmCi1xY.png"
+        title="image-20200605160050964" /></p>
+<p>“注册了”字符应该是注册成功之后显示的，我们去查找哪儿引用了这个字符。成功的找到了验证注册成功的代码。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/16tErSBAkh8qNf9.png"
+        data-srcset="https://i.loli.net/2020/06/05/16tErSBAkh8qNf9.png, https://i.loli.net/2020/06/05/16tErSBAkh8qNf9.png 1.5x, https://i.loli.net/2020/06/05/16tErSBAkh8qNf9.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/16tErSBAkh8qNf9.png"
+        title="image-20200605160333498" /></p>
+<p>要求ebx+304不等于C34，ebx+308不等于230D，ebx+310等于F94，ebx+31C不等于3E7,ebx+318和ebx+314相等，我们按照难易程度和顺序依次来分析，分析的顺序如下：</p>
+<ul>
+<li>ebx+31C不等于3E7</li>
+<li>ebx+304不等于C34</li>
+<li>ebx+308不等于230D</li>
+<li>ebx+310等于F94</li>
+<li>ebx+318和ebx+314相等</li>
+</ul>
+<p>利用的分析手段是，常量跟踪。下面的分析以其在ebx中的偏移为标题。</p>
+<h2 id="31c">31C</h2>
+<p>在IDA中搜索31C常量并添加筛选条件。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/jbTWQULZEVsgtOD.png"
+        data-srcset="https://i.loli.net/2020/06/05/jbTWQULZEVsgtOD.png, https://i.loli.net/2020/06/05/jbTWQULZEVsgtOD.png 1.5x, https://i.loli.net/2020/06/05/jbTWQULZEVsgtOD.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/jbTWQULZEVsgtOD.png"
+        title="image-20200605160921354" /></p>
+<p>跟踪第二条指令</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/jv4tr1H9fxP28as.png"
+        data-srcset="https://i.loli.net/2020/06/05/jv4tr1H9fxP28as.png, https://i.loli.net/2020/06/05/jv4tr1H9fxP28as.png 1.5x, https://i.loli.net/2020/06/05/jv4tr1H9fxP28as.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/jv4tr1H9fxP28as.png"
+        title="image-20200605160949646" /></p>
+<p>当Button1被点击时，就会触发这个事件，并将31C赋值为3E7，因此只要我们不点击注册按钮，就可以通过31C的验证。</p>
+<h2 id="304">304</h2>
+<p>同理用IDA搜索并筛选304常量</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/V5Yw8IhiBHDNsAl.png"
+        data-srcset="https://i.loli.net/2020/06/05/V5Yw8IhiBHDNsAl.png, https://i.loli.net/2020/06/05/V5Yw8IhiBHDNsAl.png 1.5x, https://i.loli.net/2020/06/05/V5Yw8IhiBHDNsAl.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/V5Yw8IhiBHDNsAl.png"
+        title="image-20200605161431922" /></p>
+<p>这里涉及的事件函数是_TForm1_FormCreate，让我们一起来分析这个时间函数的内容。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/CyH9ViwjRtYr6gM.png"
+        data-srcset="https://i.loli.net/2020/06/05/CyH9ViwjRtYr6gM.png, https://i.loli.net/2020/06/05/CyH9ViwjRtYr6gM.png 1.5x, https://i.loli.net/2020/06/05/CyH9ViwjRtYr6gM.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/CyH9ViwjRtYr6gM.png"
+        title="image-20200605161827419" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/fmcjlwNtao1GMqH.png"
+        data-srcset="https://i.loli.net/2020/06/05/fmcjlwNtao1GMqH.png, https://i.loli.net/2020/06/05/fmcjlwNtao1GMqH.png 1.5x, https://i.loli.net/2020/06/05/fmcjlwNtao1GMqH.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/fmcjlwNtao1GMqH.png"
+        title="image-20200605161835424" /></p>
+<p>这里会去读取“X:\ajj.126.c0m\j\o\j\o\ok.txt”这个路径下的ok.txt文件，方便起见我们可以把X修改为D，按照路径创建ok.txt.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/yOcastrUuBEF9VL.png"
+        data-srcset="https://i.loli.net/2020/06/05/yOcastrUuBEF9VL.png, https://i.loli.net/2020/06/05/yOcastrUuBEF9VL.png 1.5x, https://i.loli.net/2020/06/05/yOcastrUuBEF9VL.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/yOcastrUuBEF9VL.png"
+        title="image-20200605162022472" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/MpvdCLJIOtr8xVf.png"
+        data-srcset="https://i.loli.net/2020/06/05/MpvdCLJIOtr8xVf.png, https://i.loli.net/2020/06/05/MpvdCLJIOtr8xVf.png 1.5x, https://i.loli.net/2020/06/05/MpvdCLJIOtr8xVf.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/MpvdCLJIOtr8xVf.png"
+        title="image-20200605162029994" /></p>
+<p>这里会比较ok.txt文件里面的内容是否等于这个字符串，用WinHex去编辑ok.txt使其内容等于这里的验证字符串。</p>
+<p>通过上面的验证后，304不会被赋值为C34</p>
+<h2 id="308">308</h2>
+<p>分析方法同上，IDA搜索加筛选。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/JO9YWsvikuPjyH4.png"
+        data-srcset="https://i.loli.net/2020/06/05/JO9YWsvikuPjyH4.png, https://i.loli.net/2020/06/05/JO9YWsvikuPjyH4.png 1.5x, https://i.loli.net/2020/06/05/JO9YWsvikuPjyH4.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/JO9YWsvikuPjyH4.png"
+        title="image-20200605165220302" /></p>
+<p>与之相关的事件函数由，Panel1DbClick和Button1MouseDown</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/c3WTq5lA98xH6Db.png"
+        data-srcset="https://i.loli.net/2020/06/05/c3WTq5lA98xH6Db.png, https://i.loli.net/2020/06/05/c3WTq5lA98xH6Db.png 1.5x, https://i.loli.net/2020/06/05/c3WTq5lA98xH6Db.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/c3WTq5lA98xH6Db.png"
+        title="image-20200605165514906" /></p>
+<p>对左右键进行了判断，如果是左键点击，将对308赋值340D，如果是右键点击，将会加3。308的初始值为28E。</p>
+<p>我们再看一下Panel1Dbclick里面的内容。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/Wbok4dsiQvAwcMD.png"
+        data-srcset="https://i.loli.net/2020/06/05/Wbok4dsiQvAwcMD.png, https://i.loli.net/2020/06/05/Wbok4dsiQvAwcMD.png 1.5x, https://i.loli.net/2020/06/05/Wbok4dsiQvAwcMD.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/Wbok4dsiQvAwcMD.png"
+        title="image-20200605165753656" /></p>
+<p>当308的值为29D时，会对2F0处的空间进行操作，而2F0就是Edit2，这里作用是激活Edit2的编辑功能。而要使308为29D我们需要右键点击按钮（29D-28E）/3=5次。然后双击Pannel，注意不要点到图片。</p>
+<h2 id="310">310</h2>
+<p>310是该程序最复杂的地方。查找关键代码的方法同上。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/t5ugn3ZzDGRTQYM.png"
+        data-srcset="https://i.loli.net/2020/06/05/t5ugn3ZzDGRTQYM.png, https://i.loli.net/2020/06/05/t5ugn3ZzDGRTQYM.png 1.5x, https://i.loli.net/2020/06/05/t5ugn3ZzDGRTQYM.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/t5ugn3ZzDGRTQYM.png"
+        title="image-20200605170215484" /></p>
+<p>这里主要涉及FormMouseMove事件函数，我们看一下该函数的关键内容。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/BVfoAl5rZh1tiCI.png"
+        data-srcset="https://i.loli.net/2020/06/05/BVfoAl5rZh1tiCI.png, https://i.loli.net/2020/06/05/BVfoAl5rZh1tiCI.png 1.5x, https://i.loli.net/2020/06/05/BVfoAl5rZh1tiCI.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/BVfoAl5rZh1tiCI.png"
+        title="image-20200605170317995" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/gox35QltVup9fWh.png"
+        data-srcset="https://i.loli.net/2020/06/05/gox35QltVup9fWh.png, https://i.loli.net/2020/06/05/gox35QltVup9fWh.png 1.5x, https://i.loli.net/2020/06/05/gox35QltVup9fWh.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/gox35QltVup9fWh.png"
+        title="image-20200605170947649" /></p>
+<p>当检测到鼠标发生移动后，就会执行这个事件函。该函数首先判断当前显示的图片是否是2E0及Image3，如果是，则检测其x是否大于0E2，y是否大于13C，是则给310赋值10。</p>
+<p>后面又检测2DC及Image2，其x是否小于17，y是否大于12C，是则判断310是否等于10，是则继续判断30C的值是否等于9，如果不等于则会将310处赋值为F94，也就是我们的目标值。</p>
+<p>所以如果要将310处赋值为F94我们还需要使得30C处的值不等于9，我们来看一下如何修改30C处的值。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/06/05/dUseZCVDa5BMW2k.png"
+        data-srcset="https://i.loli.net/2020/06/05/dUseZCVDa5BMW2k.png, https://i.loli.net/2020/06/05/dUseZCVDa5BMW2k.png 1.5x, https://i.loli.net/2020/06/05/dUseZCVDa5BMW2k.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/06/05/dUseZCVDa5BMW2k.png"
+        title="image-20200605171105716" /></p>
+<p>Form组件创建时，给30C赋初值为9，而再Edit2DblClick中会修改30C中的值。</p>
+<p>Edit2DblClick中会检测Edit2中的值，是否长度为8，且第2个字符为’_‘，第6个字符为’，‘，并且Edit1中的字符长度为3的倍数，则会对30C赋值，从而使得其不等于9，通过上面的验证。</p>
+<h2 id="318和314">318和314</h2>
+<p>方法同理，逆向分析结果是左右键点击不同的图片时，318会增加不同的结果，最后通过组合使得318的结果等于314及可以通过验证，最终破解成功。</p>
+<h1 id="参考">参考</h1>
+<p><a href="https://www.52pojie.cn/thread-855172-1-1.html" target="_blank" rel="noopener noreffer">CrackMe005全破详解</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-06-05</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/crakeme160-005-ajj-2/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2" data-via="xx" data-hashtags="crakeme,wp"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/crakeme160-005-ajj-2/" data-hashtag="crakeme"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/crakeme160-005-ajj-2/" data-title="CrakeMe160(005)-ajj.2"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/crakeme/">crakeme</a>,&nbsp;<a href="/tags/wp/">wp</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/gkctf-writeup/" class="prev" rel="prev" title="GKCTF Writeup"><i class="fas fa-angle-left fa-fw"></i>GKCTF Writeup</a>
+            <a href="/introduction-to-the-python-sandbox-and-bytecode/" class="next" rel="next" title="Introduction to the python sandbox and bytecode">Introduction to the python sandbox and bytecode<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

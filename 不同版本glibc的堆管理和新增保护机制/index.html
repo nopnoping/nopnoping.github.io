@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>不同版本glibc的堆管理和新增保护机制 - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="不同版本glibc的堆管理和新增保护机制" />
+<meta property="og:description" content="最近阅读了《glibc内存管理ptmalloc源码分析》一书，对ptmalloc内部机制了解更深入了一层。但是书中所分析的libc版本是2.23，如今libc以及更新到2.31，且pwn中libc的版本也普遍是2.27及以上，所以就想写一篇博客纪录一下各个版本libc堆管理的差别和新增的保护机制。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-05-19T16:11:08+00:00" />
+<meta property="article:modified_time" content="2020-05-19T16:11:08+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="不同版本glibc的堆管理和新增保护机制"/>
+<meta name="twitter:description" content="最近阅读了《glibc内存管理ptmalloc源码分析》一书，对ptmalloc内部机制了解更深入了一层。但是书中所分析的libc版本是2.23，如今libc以及更新到2.31，且pwn中libc的版本也普遍是2.27及以上，所以就想写一篇博客纪录一下各个版本libc堆管理的差别和新增的保护机制。"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" /><link rel="prev" href="http://example.org/0ctf-uploadcenter/" /><link rel="next" href="http://example.org/gkctf-writeup/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "不同版本glibc的堆管理和新增保护机制",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6\/"
+        },"genre": "posts","wordcount":  7580 ,
+        "url": "http:\/\/example.org\/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6\/","datePublished": "2020-05-19T16:11:08+00:00","dateModified": "2020-05-19T16:11:08+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">不同版本glibc的堆管理和新增保护机制</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/knowledge/"><i class="far fa-folder fa-fw"></i>knowledge</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-05-19">2020-05-19</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 7580 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 16 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#malloc和free的逻辑">malloc和free的逻辑</a></li>
+    <li><a href="#堆利用">堆利用</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#tcache-bin机制">tcache bin机制</a></li>
+    <li><a href="#malloc和free的逻辑-1">malloc和free的逻辑</a></li>
+    <li><a href="#堆利用-1">堆利用</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#tcache">tcache</a></li>
+    <li><a href="#int_free新增检测机制">int_free新增检测机制</a>
+      <ul>
+        <li><a href="#unlink">unlink</a></li>
+      </ul>
+    </li>
+    <li><a href="#int_malloc新增检测机制">int_malloc新增检测机制</a>
+      <ul>
+        <li><a href="#use_top">use_top</a></li>
+      </ul>
+    </li>
+    <li><a href="#堆利用-2">堆利用</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>最近阅读了《glibc内存管理ptmalloc源码分析》一书，对ptmalloc内部机制了解更深入了一层。但是书中所分析的libc版本是2.23，如今libc以及更新到2.31，且pwn中libc的版本也普遍是2.27及以上，所以就想写一篇博客纪录一下各个版本libc堆管理的差别和新增的保护机制。</p>
+<h1 id="glibc223">Glibc2.23</h1>
+<h2 id="malloc和free的逻辑">malloc和free的逻辑</h2>
+<p>这个版本的libc应该是大家最为熟悉的，在入门pwn堆题的时候，做到的题大多都是这个版本。这个版本的堆管理有挺多的漏洞，利用方法也是最多的。</p>
+<p>首先让我们先看一下这个版本下_int_malloc的逻辑，由于这个函数的源代码太多了，在这里我仅仅只是从中提取主要部分。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="o">*</span> <span class="nf">_int_malloc</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">size_t</span> <span class="n">nb</span><span class="o">=</span><span class="n">req2size</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">nb</span> <span class="o">&lt;=</span> <span class="n">get_max_fast</span><span class="p">()){</span>
+		<span class="c1">//如果请求的大小小于fastbin支持的最大大小
+</span><span class="c1"></span>        <span class="c1">//那么从fast_bins中搜索，搜索到就返回
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">in_small_bin_range</span><span class="p">(</span><span class="n">nb</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="c1">//在fastbin中没有找到空闲的chunk或则请求大小大于fastbin支持的最大大小，就到这一步
+</span><span class="c1"></span>        <span class="c1">//判断申请的大小是否在small_bin范围内
+</span><span class="c1"></span>        <span class="c1">//如果在就从small_bin中搜索是否有复合的块，有就返回
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="c1">//请求的块在largin_bin的范围内
+</span><span class="c1"></span>        <span class="k">if</span><span class="p">(</span><span class="n">have_fastchunks</span><span class="p">(</span><span class="n">av</span><span class="p">))</span>
+            <span class="n">malloc_consolidate</span><span class="p">();</span>
+        <span class="c1">//先判断fast_bins是否为空
+</span><span class="c1"></span>        <span class="c1">//不为空，则触发malloc_consolidate，将fast_bins中的堆块合并
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="n">foreeach</span><span class="p">(</span><span class="nl">chunk</span><span class="p">:</span><span class="n">unsorted_bin</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">//到这一步，如果请求大小在small_bin范围内，那么在fast_bins和small_bins中并未找到合适的，可能unsortedbins里面会有
+</span><span class="c1"></span>        <span class="c1">//如果大小在large_bins范围内，那么可能发生了malloc_consolidate()，并将合并后的chunk放入unsortedbins，所以unsortedbins里面可能也会有合适的chunk
+</span><span class="c1"></span>        <span class="c1">//这一步就是遍历unsortedbins里面的chunk，看是否有合适的用于分配。
+</span><span class="c1"></span>        <span class="k">if</span><span class="p">(</span><span class="n">is_small</span><span class="o">&amp;&amp;</span><span class="n">only_chunk</span><span class="o">&amp;&amp;</span><span class="n">chunck_size</span><span class="o">&gt;</span><span class="n">nb</span><span class="o">+</span><span class="n">MINISIZE</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//如果请求的大小在small_bins范围内，并且unsorted_bins中仅有一个堆块，这个堆块的大小大于请求大小加MINISIZE，则分配。
+</span><span class="c1"></span>            <span class="c1">//MINISIZE在不同位数系统中不一样，MINISIZE就是malloc分配的最小堆块大小，这里之所以要保证大于nb+MINISIZE是因为当将这个chunk切割后，剩下的chunk也可以用于分配。
+</span><span class="c1"></span>        <span class="p">}</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="o">==</span><span class="n">nb</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//如果在unsortedbin中找到一个和请求大小一样的堆块，直接分配
+</span><span class="c1"></span>        <span class="p">}</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">in_small_range</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="c1">//在搜索unsortedbin的过程中，如果其大小在smallbin中，将其放入smallbin中进行管理
+</span><span class="c1"></span>        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+            <span class="c1">//不在smallbin中，就必定在largebin中
+</span><span class="c1"></span>            <span class="c1">//放入largebin中
+</span><span class="c1"></span>        <span class="p">}</span>
+    <span class="p">}</span>
+            <span class="c1">//到这里，我们以及把unsortedbin中的堆块，重新分配到了smallbin和largebin中，这个时候smallbin或则largebin中可能会有符合我们请求的chunk
+</span><span class="c1"></span>    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">in_small_range</span><span class="p">(</span><span class="n">nb</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="c1">//搜索largebin中，此时会按照small-first，best-fit的原则找一个合适的堆块，直接分配或则分割后分配
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">bin</span> <span class="n">in</span> <span class="n">bins</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">//到这一步，表面在属于自己大小的idx中找不到合适的堆块，将会尝试去从比自己大的idx中找到合适的堆块
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="c1">//到这里如果还没有分配成功那么就是是同Top chunk进行分配
+</span><span class="c1"></span><span class="nl">use_top</span><span class="p">:</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="o">&gt;=</span><span class="n">nb</span><span class="o">+</span><span class="n">MINISIZE</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">//Top chunk的大小大于请求大小加MINISIZE，则从TOP chunk中分配
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">heave_fastchunks</span><span class="p">(</span><span class="n">av</span><span class="p">))</span>
+    <span class="p">{</span>
+         <span class="c1">//如果Top chunk的大小不足够用于分配，则判断fastbin中是否有chunk有则执行malloc_consolidate
+</span><span class="c1"></span>        <span class="n">malloc_consolidate</span><span class="p">();</span>
+        <span class="c1">//由于到了这里，fastchunks中还有堆块，则请求的堆必定是在smallbin范围内，否则在之前就以及情况fastbin了
+</span><span class="c1"></span>        <span class="c1">//之后会返回外层循环，尝试重新分配
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="c1">//到这里如果还没有找到合适的堆块的话，那么久只有尝试申请新的堆块了。
+</span><span class="c1"></span>        <span class="n">brk</span><span class="p">()</span>
+        <span class="c1">//注意这里要区分主/负分配区，只有主分配去是用brk分配内存。
+</span><span class="c1"></span>    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在上面的分析中我们对于2.23版本libc堆管理有了一个较为清晰的流程，更高版本的libc中，堆管理的流程相差不大，只是在里面加入了一些新的机制，后面我只写出其新增的流程和其位于流程中的位置。</p>
+<p>下面我再简单的描述一下_int_free的逻辑，当然这里也只是抽取主要部分，细节部分需要大家自己去阅读源码了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="n">staci</span> <span class="kt">void</span> 
+<span class="nf">_int_free</span><span class="p">(</span><span class="n">mstate</span> <span class="n">av</span><span class="p">,</span><span class="n">mchunkptr</span> <span class="n">p</span><span class="p">){</span>
+    <span class="n">size_t</span> <span class="n">size</span><span class="o">=</span><span class="n">chunksize</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+    <span class="n">check_inuse_chunk</span><span class="p">(</span><span class="n">av</span><span class="p">,</span><span class="n">p</span><span class="p">);</span>
+    <span class="c1">//检测所需要释放的堆块是否在使用
+</span><span class="c1"></span>    <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="o">&lt;=</span><span class="n">get_max_fast</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">next_chunk</span><span class="p">.</span><span class="n">size</span><span class="o">&lt;=</span><span class="mi">2</span><span class="o">*</span><span class="n">SIZE_SZ</span><span class="o">||</span><span class="n">next_chunk</span><span class="p">.</span><span class="n">size</span><span class="o">&gt;=</span><span class="n">system_mem</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">error</span><span class="p">();</span>
+            <span class="c1">//检查下一个堆块的大小是否正常
+</span><span class="c1"></span>		<span class="p">}</span> 
+        <span class="k">if</span><span class="p">(</span><span class="n">old</span><span class="o">==</span><span class="n">p</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">error</span><span class="p">();</span>
+            <span class="c1">//检查fastbin表头是否和当前块相同，相同则是double_free
+</span><span class="c1"></span>        <span class="p">}</span>
+        <span class="c1">//将堆块放入fastbin头部
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">chunk_is_mapped</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">prev_inuse</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="c1">//如果上一块没有使用，则与其合并
+</span><span class="c1"></span>            <span class="n">p</span><span class="o">=</span><span class="n">prev_chunk</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+            <span class="n">unlink</span><span class="p">(</span><span class="n">av</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">bck</span><span class="p">,</span><span class="n">fwd</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">nextchunk</span> <span class="o">!=</span> <span class="n">av</span><span class="p">.</span><span class="n">top</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">next_insue</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+            <span class="p">{</span>
+                <span class="c1">//如果下一个堆块不是topchunk且未使用与其合并。
+</span><span class="c1"></span>            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span><span class="p">{</span>
+            <span class="c1">//如果下一个堆块是topchunk，则与topchunk合并
+</span><span class="c1"></span>            <span class="n">av</span><span class="p">.</span><span class="n">top</span><span class="o">=</span><span class="n">p</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="o">&gt;</span><span class="n">FASTBIN_CONSOLIDATION_THRESHOLD</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//检查所需要释放的空间是否大于consolidate的阈值，如果大于则执行malloc_consolidate,并回收空间
+</span><span class="c1"></span>            <span class="n">malloc_consolidate</span><span class="p">(</span><span class="n">av</span><span class="p">);</span>
+            <span class="n">systrim</span><span class="p">(</span><span class="n">heap</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span><span class="p">{</span>
+        <span class="n">munmap_chunk</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>高版本的释放逻辑基本2.23类似，只不过会添加更多的保护机制，在之后的分析中我仅会列出与2.23有变化的部分，相同的部分我就不进行阐述了。</p>
+<p>我们的堆漏洞利用，通常都是由于程序堆中存在Dangling pointer或则overflow漏洞，再加上ptmalloc在一些地方保护不严谨，其保护机制可以被我们绕过甚至利用来达到任意地址写，进而getshell。比如利用fastbin分配时检测不充分，达到任意地址分配的目的。利用unlink解链达到写地址的操作。这里我也简单罗列一下在2.23版本下，可以使用的堆利用技巧。</p>
+<h2 id="堆利用">堆利用</h2>
+<ul>
+<li>house of spirit：构造一个fake_chunk并进行free，加入到fastbin中，下一次就可以分配我们的fake_chunk。</li>
+<li>house_of_force：溢出到top_chunk，修改其size，令超大的分配可以从top_chunk中返回而不通过mmap痛过malloc（&amp;top-x）大小的分配返回任意地址。</li>
+<li>house_of_lore：利用smallbin和largebin在头部插入尾部取出的特性，伪造bin中某个chunk的bk指针为fake_chunk并且fake_chunk的fd字段需要为该bin的地址。然后下一次分配就是我们的chunk。</li>
+<li>house_of_orange：利用堆溢出和IO_list_all来获取shell。利用unsorted bin攻击修改io_list_all，然后将small bin中的0x61大小堆块看成FILE结构，修改相应的数据。不过unsorted bin和把0x61大小的chunk放入small bin是同时进行的。</li>
+<li>house_of_einherijar：修改相邻chunk的size和pre_inuse位，使堆块合并进而出现堆块重叠。</li>
+<li>house_of_roman：利用fast_bin和IO_FILE来达到泄漏libc的目的。</li>
+<li>house_of_rabbit：利用malloc_consolidate的时候没有检查该bin是否符合该idx。如果修改size为一个更大的值将可以发生堆块重叠。</li>
+<li>Unlink：伪造堆块，使堆块释放时，执行unlink，从而修改一些地址，但是为了绕过unlink的保护，修改的地址有限制。</li>
+<li>堆重叠：修改size达到可以修改已经释放的chunk的目的进而可以进行更多的攻击</li>
+<li>unsorted bin attack：利用unsortedbin的双向链表结构，篡改bk的值使任意地址储存一个较大的值。</li>
+<li>large bin attack：利用malloc中将unsorted bin中的largin chunk放入large bin时没有做充足的检测进而可以修改任意地址为堆块的值。</li>
+</ul>
+<p>2.23堆利用就介绍到这里，下面让我们来看一看2.27版本新增的机制和保护策略以及堆利用。</p>
+<h1 id="glibc227">Glibc2.27</h1>
+<h2 id="tcache-bin机制">tcache bin机制</h2>
+<p>2.27版本比2.23多了一个tchache bin。tchache bin是在2.26版本中引入的，用来进一步提升堆管理性能。</p>
+<p>首先我们看一下tcache bin的几个宏定义（以下代码来至libc2.27，之后将不做说明）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* We want 64 entries.  This is an arbitrary limit, which tunables can reduce.  */</span>
+<span class="cp"># define TCACHE_MAX_BINS		64
+</span><span class="cp"># define MAX_TCACHE_SIZE	tidx2usize (TCACHE_MAX_BINS-1)
+</span><span class="cp"></span>
+<span class="cm">/* Only used to pre-fill the tunables.  */</span>
+<span class="cp"># define tidx2usize(idx)	(((size_t) idx) * MALLOC_ALIGNMENT + MINSIZE - SIZE_SZ)
+</span><span class="cp"></span>
+<span class="cm">/* When &#34;x&#34; is from chunksize().  */</span>
+<span class="cp"># define csize2tidx(x) (((x) - MINSIZE + MALLOC_ALIGNMENT - 1) / MALLOC_ALIGNMENT)
+</span><span class="cp"></span><span class="cm">/* When &#34;x&#34; is a user-provided size.  */</span>
+<span class="cp"># define usize2tidx(x) csize2tidx (request2size (x))
+</span><span class="cp"></span>
+<span class="cm">/* With rounding and alignment, the bins are...
+</span><span class="cm">   idx 0   bytes 0..24 (64-bit) or 0..12 (32-bit)
+</span><span class="cm">   idx 1   bytes 25..40 or 13..20
+</span><span class="cm">   idx 2   bytes 41..56 or 21..28
+</span><span class="cm">   etc.  */</span>
+
+<span class="cm">/* This is another arbitrary limit, which tunables can change.  Each
+</span><span class="cm">   tcache bin will hold at most this number of chunks.  */</span>
+<span class="cp"># define TCACHE_FILL_COUNT 7
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这里挑几个重点宏定义讲一下。TCACHE_MAX_BIN定义了用于管理tcache的最大bin数量，其被定义为64，及有64个bin用于管理tcache bin。其编号idx依次从0到63，对应的chunk size从MALLOC_ALIGNMENT*2到MALLOC_ALLIGNMENT*64，如果是64位系统，tcache bin中最大能储存0x800的大小。HACHE_FILL_COUNT定义了给个bin最多能粗存的个数。</p>
+<p>再来看两个重要的tcache结构</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* We overlay this structure on the user-data portion of a chunk when
+</span><span class="cm">   the chunk is stored in the per-thread cache.  */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">tcache_entry</span>
+<span class="p">{</span>
+  <span class="k">struct</span> <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">tcache_entry</span><span class="p">;</span>
+
+<span class="cm">/* There is one of these for each thread, which contains the
+</span><span class="cm">   per-thread cache (hence &#34;tcache_perthread_struct&#34;).  Keeping
+</span><span class="cm">   overall size low is mildly important.  Note that COUNTS and ENTRIES
+</span><span class="cm">   are redundant (we could have just counted the linked list each
+</span><span class="cm">   time), this is for performance reasons.  */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">tcache_perthread_struct</span>
+<span class="p">{</span>
+  <span class="kt">char</span> <span class="n">counts</span><span class="p">[</span><span class="n">TCACHE_MAX_BINS</span><span class="p">];</span>
+  <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">entries</span><span class="p">[</span><span class="n">TCACHE_MAX_BINS</span><span class="p">];</span>
+<span class="p">}</span> <span class="n">tcache_perthread_struct</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>tchache_entry是一个单向列表，用来将bin中的chunk连成一个单链，其机制与fast bin类似。tcache_perthread_struct是用来管理bin的一个结构，其有一个char数组成员，用来记录给个bin已经储存了几个chunk，entries是每个不同大小bins的队头，用来遍历和管理tcache bin。tcache_perthread_struct在tcache_init()中创建，让我们一起来看一下这个函数。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span>
+<span class="nf">tcache_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">mstate</span> <span class="n">ar_ptr</span><span class="p">;</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">victim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">const</span> <span class="n">size_t</span> <span class="n">bytes</span> <span class="o">=</span> <span class="k">sizeof</span> <span class="p">(</span><span class="n">tcache_perthread_struct</span><span class="p">);</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">tcache_shutting_down</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">;</span>
+
+  <span class="n">arena_get</span> <span class="p">(</span><span class="n">ar_ptr</span><span class="p">,</span> <span class="n">bytes</span><span class="p">);</span>
+  <span class="n">victim</span> <span class="o">=</span> <span class="n">_int_malloc</span> <span class="p">(</span><span class="n">ar_ptr</span><span class="p">,</span> <span class="n">bytes</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">victim</span> <span class="o">&amp;&amp;</span> <span class="n">ar_ptr</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">ar_ptr</span> <span class="o">=</span> <span class="n">arena_get_retry</span> <span class="p">(</span><span class="n">ar_ptr</span><span class="p">,</span> <span class="n">bytes</span><span class="p">);</span>
+      <span class="n">victim</span> <span class="o">=</span> <span class="n">_int_malloc</span> <span class="p">(</span><span class="n">ar_ptr</span><span class="p">,</span> <span class="n">bytes</span><span class="p">);</span>
+    <span class="p">}</span>
+
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">ar_ptr</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="n">__libc_lock_unlock</span> <span class="p">(</span><span class="n">ar_ptr</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">);</span>
+
+  <span class="cm">/* In a low memory situation, we may not be able to allocate memory
+</span><span class="cm">     - in which case, we just keep trying later.  However, we
+</span><span class="cm">     typically do this very early, so either there is sufficient
+</span><span class="cm">     memory, or there isn&#39;t enough memory to do non-trivial
+</span><span class="cm">     allocations anyway.  */</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">victim</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">tcache</span> <span class="o">=</span> <span class="p">(</span><span class="n">tcache_perthread_struct</span> <span class="o">*</span><span class="p">)</span> <span class="n">victim</span><span class="p">;</span>
+      <span class="n">memset</span> <span class="p">(</span><span class="n">tcache</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span> <span class="p">(</span><span class="n">tcache_perthread_struct</span><span class="p">));</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>其根据tchache_perthread_struct的大小，用malloc创建一个实例并将其赋值给全局遍历，tchache，而tchache就是tchache_perthread_struct的指针。并且tchache_init是在初始话时被调用，所以此时创建的chunk是堆块中第一个创建的chunk。（如果实现了任意地址修改，就可以修改此处的chunk，进而可以控制tcache bin的数量和指针）</p>
+<p>接下来再介绍一下加入tcache和取出tcache的两个函数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* Caller must ensure that we know tc_idx is valid and there&#39;s room
+</span><span class="cm">   for more chunks.  */</span>
+<span class="k">static</span> <span class="n">__always_inline</span> <span class="kt">void</span>
+<span class="nf">tcache_put</span> <span class="p">(</span><span class="n">mchunkptr</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">tc_idx</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">tcache_entry</span> <span class="o">*</span><span class="p">)</span> <span class="n">chunk2mem</span> <span class="p">(</span><span class="n">chunk</span><span class="p">);</span>
+  <span class="n">assert</span> <span class="p">(</span><span class="n">tc_idx</span> <span class="o">&lt;</span> <span class="n">TCACHE_MAX_BINS</span><span class="p">);</span>
+  <span class="n">e</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">];</span>
+  <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="p">;</span>
+  <span class="o">++</span><span class="p">(</span><span class="n">tcache</span><span class="o">-&gt;</span><span class="n">counts</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="cm">/* Caller must ensure that we know tc_idx is valid and there&#39;s
+</span><span class="cm">   available chunks to remove.  */</span>
+<span class="k">static</span> <span class="n">__always_inline</span> <span class="kt">void</span> <span class="o">*</span>
+<span class="nf">tcache_get</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">tc_idx</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">];</span>
+  <span class="n">assert</span> <span class="p">(</span><span class="n">tc_idx</span> <span class="o">&lt;</span> <span class="n">TCACHE_MAX_BINS</span><span class="p">);</span>
+  <span class="n">assert</span> <span class="p">(</span><span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+  <span class="o">--</span><span class="p">(</span><span class="n">tcache</span><span class="o">-&gt;</span><span class="n">counts</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]);</span>
+  <span class="k">return</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">e</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>tcache_put将tcache放入bin中，仅仅只是检查了其大小是否符合tcache。tcache_get从tcache中获得一个bin，也仅仅检测了大小是否符合tcache以及bin不为空。可以看出tcache安全机制特别简单，所以引入了tcache反而使漏洞利用更简单了。</p>
+<p>下面我们看一看引入tcache后，malloc和free做了哪些改变。</p>
+<h2 id="malloc和free的逻辑-1">malloc和free的逻辑</h2>
+<p>首先看一下__libc_malloc，这里我们只写出该函数中我们关心的部分。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="o">*</span>
+<span class="nf">__libc_malloc</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">bytes</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">tc_idx</span> <span class="o">&lt;</span> <span class="n">mp_</span><span class="p">.</span><span class="n">tcache_bins</span>
+      <span class="cm">/*&amp;&amp; tc_idx &lt; TCACHE_MAX_BINS*/</span> <span class="cm">/* to appease gcc */</span>
+      <span class="o">&amp;&amp;</span> <span class="n">tcache</span>
+      <span class="o">&amp;&amp;</span> <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="k">return</span> <span class="n">tcache_get</span> <span class="p">(</span><span class="n">tc_idx</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">victim</span> <span class="o">=</span> <span class="n">_int_malloc</span> <span class="p">(</span><span class="n">ar_ptr</span><span class="p">,</span> <span class="n">bytes</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>从函数代码中，我们可以看出，在执行int_malloc之前，程序首先去搜索tcache，查看tcache中是否有空闲的bin，如果有直接从tcache中分配，如果没有才执行int_malloc。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="o">*</span>
+<span class="nf">_int_malloc</span> <span class="p">(</span><span class="n">mstate</span> <span class="n">av</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">bytes</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">size_t</span> <span class="n">nb</span><span class="o">=</span><span class="n">req2size</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">nb</span><span class="o">&lt;=</span><span class="n">get_max_fast</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="c1">//与2.23的区别在于，如果大小在fast_bin的范围内，那么如果尝试从fast_bin中获取堆块
+</span><span class="c1"></span>        <span class="c1">//获取成功后，将fast_bin中剩余的堆块放入tcache中
+</span><span class="c1"></span>    <span class="p">}</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">in_small_bin</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="c1">//与2.23的区别在于，获取small_bin成功后，将剩下的堆块放入tcache中
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="k">else</span><span class="p">{</span>
+        <span class="n">malloc_consolidate</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">chunk</span><span class="o">::</span><span class="n">unsorted_bin</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="p">......</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">==</span><span class="n">nb</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//将chunk放入tcache中,并将return_cached置为1
+</span><span class="c1"></span>        <span class="p">}</span>
+        <span class="p">......</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">return_cached</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//如果return_cached为1，则从tcache中分配
+</span><span class="c1"></span>        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="p">.....</span>
+    
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>2.27的_int_malloc和2.23的主要区别在于2.27会将fastbin和smallbin还有unsortedbin中多余的块放入tcache中。</p>
+<p>接下来让我们看一下free逻辑</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span>
+<span class="nf">_int_free</span> <span class="p">(</span><span class="n">mstate</span> <span class="n">av</span><span class="p">,</span> <span class="n">mchunkptr</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">have_lock</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">size_t</span> <span class="n">size</span><span class="o">=</span><span class="n">chunksize</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">tcache</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">//将该chunk放入tcache中
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="p">......</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>2.27的free与之前主要的区别在于先检查是否处于tcache范围，且tcache未存满，如果没有存满则直接put进去，之后的操作于2.23如出一辙。</p>
+<h2 id="堆利用-1">堆利用</h2>
+<ul>
+<li>tcache_dup：tcache的释放没有进行double free检测，如果存在UAF漏洞可直接对tcache进行double free 进而实现任意地址分配。</li>
+<li>tcache_poisoning：类似于修改fast bin的fd字段。当程序存在溢出漏洞时，可以修改tcache的next字段，达到任意地址分配的目的。</li>
+<li>tcache_house_of_spirit：类似于fast bin的house_of_spirit，但是tcache的检测比fastbin更为简单，只需要释放的chunk满足size要求即可，并不会对下一个chunk进行检测。</li>
+<li>house_of_bot_cake：该方法的利用需要有UAF漏洞。释放7个chunk进而填满tcache，再释放两个相同的chunkA和B使其consolidate，再分配一个相同大小的chunk，让tcache有空余，再利用UAF再次释放chunkB，进而可以实现overlapping。</li>
+<li>tcache_stashing_unlink_attack：利用分配small bin时会将多余的块放入tcache的机制，恶意修改bk的值，以达到修改某个地址为一个很大的值的目的。类似于unsorted bin attack。</li>
+<li>fastbin_reverse_into_tcache：该利用方法和上一个利用方法原理类似，利用了分配fastbin时，会将多余的chunk放入tcache中。做法是先将tcache填满，再释放7个chunk，并修改fast表头的fd指针为我们想修改的地址。之后malloc8个chunk，在分配第8个chunk时，将会把fast bin中的chunk放入tcache中，从而修改目标地址。</li>
+</ul>
+<h1 id="glibc229">Glibc2.29</h1>
+<p>libc2.29没有修改malloc和free的逻辑也没有新增像tcache一样的机制，只是修改了一些在malloc和free chunk时的检测机制，下面让我们一起来看一看2.29相较于之前的版本，检测机制做出了什么样的修改。</p>
+<h2 id="tcache">tcache</h2>
+<p>我们知道2.27版本的tcache安全保护机制十分的脆弱，很容易就能被利用，所以在2.29版本中，对tcache结构体加入了新的字段 key。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">tcache_entry</span>
+<span class="p">{</span>
+  <span class="k">struct</span> <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+  <span class="cm">/* This field exists to detect double frees.  */</span>
+  <span class="k">struct</span> <span class="n">tcache_perthread_struct</span> <span class="o">*</span><span class="n">key</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">tcache_entry</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>加这个字段的目的主要是用来检测double free。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="n">tcache_put</span> <span class="p">(</span><span class="n">mchunkptr</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">tc_idx</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">tcache_entry</span> <span class="o">*</span><span class="p">)</span> <span class="n">chunk2mem</span> <span class="p">(</span><span class="n">chunk</span><span class="p">);</span>
+  <span class="n">assert</span> <span class="p">(</span><span class="n">tc_idx</span> <span class="o">&lt;</span> <span class="n">TCACHE_MAX_BINS</span><span class="p">);</span>
+
+  <span class="cm">/* Mark this chunk as &#34;in the tcache&#34; so the test in _int_free will
+</span><span class="cm">     detect a double free.  */</span>
+  <span class="n">e</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">=</span> <span class="n">tcache</span><span class="p">;</span>	<span class="c1">//new
+</span><span class="c1"></span>
+  <span class="n">e</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">];</span>
+  <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="p">;</span>
+  <span class="o">++</span><span class="p">(</span><span class="n">tcache</span><span class="o">-&gt;</span><span class="n">counts</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="n">tcache_get</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">tc_idx</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">tcache_entry</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">];</span>
+  <span class="n">assert</span> <span class="p">(</span><span class="n">tc_idx</span> <span class="o">&lt;</span> <span class="n">TCACHE_MAX_BINS</span><span class="p">);</span>
+  <span class="n">assert</span> <span class="p">(</span><span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">tcache</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+  <span class="o">--</span><span class="p">(</span><span class="n">tcache</span><span class="o">-&gt;</span><span class="n">counts</span><span class="p">[</span><span class="n">tc_idx</span><span class="p">]);</span>
+  <span class="n">e</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>	<span class="c1">//new
+</span><span class="c1"></span>  <span class="k">return</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="n">e</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>在加入tcache_bin时将key字段赋值为tcahce的地址，而在取出时，会将该字段清零。为什么这么做呢我们看一下int_free中新增的检测机制就清楚了。</p>
+<h2 id="int_free新增检测机制">int_free新增检测机制</h2>
+<p>Int_free中新增了对tcache释放时，key字段的检验，下面是伪代码。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="o">*</span> <span class="nf">_int_free</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">key</span><span class="o">==</span><span class="n">tcache</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">error</span><span class="p">(</span><span class="s">&#34;double free!&#34;</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果当前释放的chunk，其key字段为tcache的话，那么判断其为double free</p>
+<h3 id="unlink">unlink</h3>
+<p>在free中除了新增了对tcache的检测，还增强了unlink的检测机制。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">prev_inuse</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="p">{</span>
+      <span class="n">prevsize</span> <span class="o">=</span> <span class="n">prev_size</span> <span class="p">(</span><span class="n">p</span><span class="p">);</span>
+      <span class="n">size</span> <span class="o">+=</span> <span class="n">prevsize</span><span class="p">;</span>
+      <span class="n">p</span> <span class="o">=</span> <span class="n">chunk_at_offset</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="p">((</span><span class="kt">long</span><span class="p">)</span> <span class="n">prevsize</span><span class="p">));</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">chunksize</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">!=</span> <span class="n">prevsize</span><span class="p">))</span>	<span class="c1">//new
+</span><span class="c1"></span>        <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;corrupted size vs. prev_size while consolidating&#34;</span><span class="p">);</span>
+      <span class="n">unlink_chunk</span> <span class="p">(</span><span class="n">av</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在进行unlinlk解链前，会检查该chunk的大小是否和presize相同。增加了null of byte的利用难度。</p>
+<h2 id="int_malloc新增检测机制">int_malloc新增检测机制</h2>
+<p>在2.29int_malloc中新增了关于unsorted bin的检测</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"> <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">SIZE_SZ</span><span class="p">)</span>
+              <span class="o">||</span> <span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">size</span> <span class="o">&gt;</span> <span class="n">av</span><span class="o">-&gt;</span><span class="n">system_mem</span><span class="p">))</span>
+            <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): invalid size (unsorted)&#34;</span><span class="p">);</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">chunksize_nomask</span> <span class="p">(</span><span class="n">next</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">SIZE_SZ</span><span class="p">)</span>
+              <span class="o">||</span> <span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">chunksize_nomask</span> <span class="p">(</span><span class="n">next</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">av</span><span class="o">-&gt;</span><span class="n">system_mem</span><span class="p">))</span>
+            <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): invalid next size (unsorted)&#34;</span><span class="p">);</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">((</span><span class="n">prev_size</span> <span class="p">(</span><span class="n">next</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="p">(</span><span class="n">SIZE_BITS</span><span class="p">))</span> <span class="o">!=</span> <span class="n">size</span><span class="p">))</span>
+            <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): mismatching next-&gt;prev_size (unsorted)&#34;</span><span class="p">);</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">bck</span><span class="o">-&gt;</span><span class="n">fd</span> <span class="o">!=</span> <span class="n">victim</span><span class="p">)</span>
+              <span class="o">||</span> <span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">victim</span><span class="o">-&gt;</span><span class="n">fd</span> <span class="o">!=</span> <span class="n">unsorted_chunks</span> <span class="p">(</span><span class="n">av</span><span class="p">)))</span>
+            <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): unsorted double linked list corrupted&#34;</span><span class="p">);</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">prev_inuse</span> <span class="p">(</span><span class="n">next</span><span class="p">)))</span>
+            <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): invalid next-&gt;prev_inuse (unsorted)&#34;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>检测了当前chunksize的合法性，nextchunksize的合法性以及双相链表的完整性。加入了这几个检测机制后，unsorted bin attack攻击将很难继续使用。</p>
+<h3 id="use_top">use_top</h3>
+<p>在int_malloc中对use_top增加了检测机制。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">size</span> <span class="o">&gt;</span> <span class="n">av</span><span class="o">-&gt;</span><span class="n">system_mem</span><span class="p">))</span><span class="c1">//0x21000
+</span><span class="c1"></span>        <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): corrupted top size&#34;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在使用top chunk时对top chunk的大小进行了检验，使得house of force再也不能使用，从此载入史册。</p>
+<h2 id="堆利用-2">堆利用</h2>
+<p>2.29与2.27相比，unsorted_bin_attack，house of force，tcache_dump这三个漏洞利用技术，无法再使用。</p>
+<h1 id="glibc230">Glibc2.30</h1>
+<p>2.30版本的libc与2.29没有太大的变化，但是对int_malloc中将unsorted bin中的内容放入large bin中时做了更多的检测，使得large bin attack再也无法使用，成为历史。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c">    <span class="n">victim</span><span class="o">-&gt;</span><span class="n">fwufad_nextsize</span> <span class="o">=</span> <span class="n">fwd</span><span class="p">;</span>
+    <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">!=</span> <span class="n">fwd</span><span class="p">))</span>
+        <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): largebin double linked list corrupted (nextsize)&#34;</span><span class="p">);</span>
+    <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+    <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="n">bck</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">bck</span><span class="o">-&gt;</span><span class="n">fd</span> <span class="o">!=</span> <span class="n">fwd</span><span class="p">)</span>
+    <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">&#34;malloc(): largebin double linked list corrupted (bk)&#34;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在将unsortd bin放入large bin时会检验fwd链表的完整性，使得largin attack通不过检测，攻击不成功。large bin从此退出利用舞台，载入历史。</p>
+<h1 id="glibc231">Glibc2.31</h1>
+<p>libc2.31版本在堆块管理和安全机制上和2.30没有什么太大的变化。</p>
+<h1 id="参考">参考</h1>
+<p><a href="https://evilpan.com/2020/04/12/glibc-heap-exp/#tcache" target="_blank" rel="noopener noreffer">ptmalloc与glibc堆漏洞利用</a></p>
+<p><a href="https://github.com/shellphish/how2heap" target="_blank" rel="noopener noreffer">how2heap</a></p>
+<p><a href="https://www.anquanke.com/post/id/194960#h2-2" target="_blank" rel="noopener noreffer">glibc-2.29新增的保护机制学习总结</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/136983333" target="_blank" rel="noopener noreffer">Heap Exploit v2.31 | 最新堆利用技巧，速速查收</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-05-19</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制" data-via="xx"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%ACglibc%E7%9A%84%E5%A0%86%E7%AE%A1%E7%90%86%E5%92%8C%E6%96%B0%E5%A2%9E%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/" data-title="不同版本glibc的堆管理和新增保护机制"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/0ctf-uploadcenter/" class="prev" rel="prev" title="0CTF uploadcenter"><i class="fas fa-angle-left fa-fw"></i>0CTF uploadcenter</a>
+            <a href="/gkctf-writeup/" class="next" rel="next" title="GKCTF Writeup">GKCTF Writeup<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

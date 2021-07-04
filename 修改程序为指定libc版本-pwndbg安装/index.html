@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>修改程序为指定libc版本 &amp; pwndbg安装 - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="修改程序为指定libc版本 &amp; pwndbg安装" />
+<meta property="og:description" content="如何在ubuntu16上修改程序为libc2.27？如何安装pwndbg以及pwndbg的调试姿势？" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-04-17T21:00:22+00:00" />
+<meta property="article:modified_time" content="2020-04-17T21:00:22+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="修改程序为指定libc版本 &amp; pwndbg安装"/>
+<meta name="twitter:description" content="如何在ubuntu16上修改程序为libc2.27？如何安装pwndbg以及pwndbg的调试姿势？"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" /><link rel="prev" href="http://example.org/ciscn-2019-s-3/" /><link rel="next" href="http://example.org/v-n2020-%E5%85%AC%E5%BC%80%E8%B5%9B-easytheap/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "修改程序为指定libc版本 \u0026 pwndbg安装",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85\/"
+        },"genre": "posts","wordcount":  2035 ,
+        "url": "http:\/\/example.org\/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85\/","datePublished": "2020-04-17T21:00:22+00:00","dateModified": "2020-04-17T21:00:22+00:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">修改程序为指定libc版本 &amp; pwndbg安装</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/tools/"><i class="far fa-folder fa-fw"></i>tools</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-04-17">2020-04-17</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2035 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#直接修改ld_perload">直接修改LD_PERLOAD</a></li>
+    <li><a href="#patchelf修改">patchelf修改</a>
+      <ul>
+        <li><a href="#下载glibc-all-in-one">下载glibc-all-in-one</a>
+          <ul>
+            <li><a href="#download">download</a></li>
+            <li><a href="#complile">complile</a></li>
+          </ul>
+        </li>
+        <li><a href="#patch下载和使用">patch下载和使用</a>
+          <ul>
+            <li><a href="#安装">安装</a></li>
+            <li><a href="#patchelf使用方法">patchelf使用方法</a></li>
+          </ul>
+        </li>
+        <li><a href="#修改">修改</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li><a href="#安装-1">安装</a></li>
+    <li><a href="#使用方法">使用方法</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>如何在ubuntu16上修改程序为libc2.27？如何安装pwndbg以及pwndbg的调试姿势？</p>
+<h1 id="修改程序libc版本">修改程序libc版本</h1>
+<p>在做pwn题时，经常遇到各种版本的libc，常见的是2.27，2.23。不同版本的libc，其机制又不同，比如2.27版本的libc其引入了tcachebin机制，而2.23是没有这个机制的。因此如果靶机环境是2.27，那么你用2.23做题就无法得到正确payload。这个时候就需要修改程序的libc。</p>
+<p>libc和程序是通过动态连接器连接在一起的，其详细信息的信息写在程序的LD_RERLOAD中因此我们可以直接修改LD_PERLOAD为目标libc。</p>
+<h2 id="直接修改ld_perload">直接修改LD_PERLOAD</h2>
+<p>这种修改方式十分简单粗暴，但也十分容易出错。直接修改时，也需要修改ld.so的版本。低版本的ld.so是无法加载高版本的libc的，所以如果只是简单的修改了libc.so而没有修改ld.so就会引起段错误。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">LD_PRELOAD</span><span class="o">=</span>./libc.so.6 ./pwn
+段错误 <span class="o">(</span>核心已转储<span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们需要将ld.so和libc.so一起修改。即在LD_PERLOAD后面添加libc的路径，在第二行添加ld的路径。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">LD_PRELOAD</span><span class="o">=</span>/path/to/libc.so.6<span class="p">;</span>
+/path/to/ld.so ./pwn
+</code></pre></td></tr></table>
+</div>
+</div><p>也可以在pwntools启动程序中，进行配置</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">p</span><span class="o">=</span><span class="n">process</span><span class="p">([</span><span class="s1">&#39;/path/to/ld.so&#39;</span><span class="p">,</span><span class="s1">&#39;./pwn&#39;</span><span class="p">],</span><span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;LD_PERLOAD&#39;</span><span class="p">:</span><span class="s1">&#39;/path/to/libc.so.6&#39;</span><span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>但是这种方式修改后gdb调试时，是没有libc相应调试信息的。</p>
+<p>这里我们推荐另外一种方式，下载glbc-all-in-one并编译所需版本的glibc，利用patchelf工具修改程序的链接器和glibc。</p>
+<h2 id="patchelf修改">patchelf修改</h2>
+<h3 id="下载glibc-all-in-one">下载glibc-all-in-one</h3>
+<p>glibc-all-in-one是github上一个开源项目，帮助我们更容易的调试，下载和编译所需libc版本。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/matrix1001/glibc-all-in-one.git
+<span class="nb">cd</span> glibc-all-in-one
+chmod a+x build download extract
+</code></pre></td></tr></table>
+</div>
+</div><p>在这里简单翻译下glibc-all-in-one github项目上的教程</p>
+<h4 id="download">download</h4>
+<p>检查支持的包</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">➜  glibc-all-in-one cat list
+2.23-0ubuntu10_amd64
+2.23-0ubuntu10_i386
+2.23-0ubuntu11_amd64
+2.23-0ubuntu11_i386
+2.23-0ubuntu3_amd64
+2.23-0ubuntu3_i386
+2.27-3ubuntu1_amd64
+2.27-3ubuntu1_i386
+2.28-0ubuntu1_amd64
+2.28-0ubuntu1_i386
+2.29-0ubuntu2_amd64
+2.29-0ubuntu2_i386
+</code></pre></td></tr></table>
+</div>
+</div><p>下载</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">➜  glibc-all-in-one ./download 2.23-0ubuntu10_i386
+Getting 2.23-0ubuntu10_i386
+  -&gt; Location: https://mirror.tuna.tsinghua.edu.cn/ubuntu/pool/main/g/glibc/libc6_2.23-0ubuntu10_i386.deb
+  -&gt; Downloading libc binary package
+  -&gt; Extracting libc binary package
+  -&gt; Package saved to libs/2.23-0ubuntu10_i386
+  -&gt; Location: https://mirror.tuna.tsinghua.edu.cn/ubuntu/pool/main/g/glibc/libc6-dbg_2.23-0ubuntu10_i386.deb
+  -&gt; Downloading libc debug package
+  -&gt; Extracting libc debug package
+  -&gt; Package saved to libs/2.23-0ubuntu10_i386/dbg
+➜  glibc-all-in-one ls libs/2.23-0ubuntu10_i386
+. .. .debug  ld-2.23.so  libc-2.23.so  libpthread.so.0   ......
+➜  glibc-all-in-one ls libs/2.23-0ubuntu10_i386/.debug
+ld-2.23.so  libc-2.23.so   ......
+</code></pre></td></tr></table>
+</div>
+</div><p>需要的glibc没有在列表中？</p>
+<p>你可以自己下载glibc，然后使用extract。</p>
+<p>&lsquo;<a href="http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/'">http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/'</a> 可以下载2.19到2.26版本的Ubuntu glibc。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">./extract ~/libc6_2.26-0ubuntu2_i386.deb /tmp/test
+./extract ~/libc6-dbg_2.26-0ubuntu2_i386.deb /tmp/test_dbg
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="complile">complile</h4>
+<p>支持版本:2.19,2.23-2.29</p>
+<p>支持架构:i686,amd64</p>
+<p>注意：老版本的glibc的编译可能会出问题。</p>
+<p>注意：改变GLIBC_DIR可以修改编译后glibc的地址</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">sudo ./build 2.27 amd64 #数字为你需要的libc版本，amd64为你需要的架构
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="patch下载和使用">patch下载和使用</h3>
+<p>当我们获得所需版本的libc和ld后，可以利用patchelf工具来修改程序。</p>
+<p>patchelf同样是github上的一个开源项目，它用于修改程序的ld和libc，这里简单讲解一下安装方法和使用方法</p>
+<h4 id="安装">安装</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">git clone https://github.com/NixOS/patchelf.git
+./bootstrap.sh
+./configure
+make
+sudp make install
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="patchelf使用方法">patchelf使用方法</h4>
+<ul>
+<li>修改程序的动态链接加载器ld</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --set-interpreter /lib/my-ld-linux.so.2 my-program
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>修改程序和库的路径</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --set-rpath /opt/my-libs/lib:/oter-libs my-program
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>缩减程序和库的路径</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --shrink-rpath my-program
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>移除一个已声明的依赖动态库(就是移除动态链接库路径)</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --remove-needed lib.so myprogram
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>添加一个已经声明的依赖动态库</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --add-needed libfoo.so.1 my-program
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>替代一个已声明的以来动态库</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --replace-needed liboriginal.so.1 libreplacement.so.1 my-program
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>改变动态库的符号名</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --set-soname libnewname.so.3.4.5 path/to/libmylibrary.so.1.2.3
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="修改">修改</h3>
+<p>现在所需工具我们已经安装好了，我们只需要利用patchelf将ld和libc修改为我们用glibc-all-in-one编译好的ld和libc即可。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">patchelf --set-interpreter /glibc/2.27/amd64/lib/lib-2.27.ld ./pwn
+patchelf --replace-needed libc.so.6 /glibc/2.27/amd64/lib/libc-2.27.so ./pwn
+</code></pre></td></tr></table>
+</div>
+</div><p>利用ldd测试，即可发现修改成功</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://raw.githubusercontent.com/TroyeCriss/blog_img/master/img/20200518230951.png"
+        data-srcset="https://raw.githubusercontent.com/TroyeCriss/blog_img/master/img/20200518230951.png, https://raw.githubusercontent.com/TroyeCriss/blog_img/master/img/20200518230951.png 1.5x, https://raw.githubusercontent.com/TroyeCriss/blog_img/master/img/20200518230951.png 2x"
+        data-sizes="auto"
+        alt="https://raw.githubusercontent.com/TroyeCriss/blog_img/master/img/20200518230951.png"
+        title="image-20200518230924843" /></p>
+<p>ok现在我们可以修改程序为指定libc了，并且all-in-one里面的glibc保留了编译信息，在我们调试时，将会给我们提供很大的帮助，再这里再简单介绍一下pwndbg工具的使用。</p>
+<h1 id="pwndbg安装和使用">pwndbg安装和使用</h1>
+<h2 id="安装-1">安装</h2>
+<p>pwndbg是一个gdb插件，给pwn选手调试程序时提供了更多更方便的调试命令，如heap，bins等命令，可以更方便的查看堆的信息。</p>
+<p>pwndbg是github项目因此我们可以利用git来下载。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">git clone https://github.com/pwndbg/pwndbg.git
+cd pwndbg
+./setup.sh
+</code></pre></td></tr></table>
+</div>
+</div><p>这里需要注意一下，由于大多数包都是通过pip来安装的，如果不将pip配置为国内镜像源的话，那么非常容易因为网络的原因造成错误，前功尽弃。这里我们配置一下pip的国内镜像。</p>
+<p>修改~/.pip/pip.config(如果没有相应文件夹和文件，就新建一个)</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+[install]
+trusted-host=mirrors.aliyun.com
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="使用方法">使用方法</h2>
+<p>这里就不过多介绍pwndbg的使用方法了，详情请浏览pwndbg github上的介绍和参看。</p>
+<h1 id="参考">参考</h1>
+<p>[pwn题加载任意版本libc](<a href="https://at0de.com/2020/02/18/pwn%E9%A2%98%E5%8A%A0%E8%BD%BD%E4%BB%BB%E6%84%8F%E7%89%88%E6%9C%AClibc/%5D(https://at0de.com/2020/02/18/pwn">https://at0de.com/2020/02/18/pwn%E9%A2%98%E5%8A%A0%E8%BD%BD%E4%BB%BB%E6%84%8F%E7%89%88%E6%9C%AClibc/](https://at0de.com/2020/02/18/pwn</a>题加载任意版本libc/)</p>
+<p><a href="https://bbs.pediy.com/thread-225849.htm" target="_blank" rel="noopener noreffer">关于不同版本glibc强行加载的方法（附上代码)</a></p>
+<p><a href="https://bbs.pediy.com/thread-254868.htm" target="_blank" rel="noopener noreffer">关于不同版本 glibc 更换的一些问题</a></p>
+<p><a href="https://github.com/matrix1001/glibc-all-in-one" target="_blank" rel="noopener noreffer">glibc-all-in-one</a></p>
+<p><a href="https://github.com/pwndbg/pwndbg" target="_blank" rel="noopener noreffer">pwndbg</a></p>
+<p><a href="https://blog.csdn.net/Breeze_CAT/article/details/103789233" target="_blank" rel="noopener noreffer">pwn调试：gdb+pwndbg食用指南</a></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-04-17</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装" data-via="xx"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/%E4%BF%AE%E6%94%B9%E7%A8%8B%E5%BA%8F%E4%B8%BA%E6%8C%87%E5%AE%9Alibc%E7%89%88%E6%9C%AC-pwndbg%E5%AE%89%E8%A3%85/" data-title="修改程序为指定libc版本 &amp; pwndbg安装"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/ciscn-2019-s-3/" class="prev" rel="prev" title="ciscn_2019_s_3"><i class="fas fa-angle-left fa-fw"></i>ciscn_2019_s_3</a>
+            <a href="/v-n2020-%E5%85%AC%E5%BC%80%E8%B5%9B-easytheap/" class="next" rel="next" title="[V&amp;N2020 公开赛]easyTHeap">[V&amp;N2020 公开赛]easyTHeap<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

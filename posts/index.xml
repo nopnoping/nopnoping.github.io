@@ -3,7 +3,14 @@
         <title>所有文章 - Luexp</title>
         <link>http://example.org/posts/</link>
         <description>所有文章 | Luexp</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 16 Jul 2021 14:28:09 &#43;0800</lastBuildDate><atom:link href="http://example.org/posts/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Thu, 29 Jul 2021 14:33:17 &#43;0800</lastBuildDate><atom:link href="http://example.org/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>文件描述符和reverse_shell</title>
+    <link>http://example.org/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%92%8Creverse_shell/</link>
+    <pubDate>Thu, 29 Jul 2021 14:33:17 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://example.org/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%92%8Creverse_shell/</guid>
+    <description><![CDATA[昨夜西风凋碧树，独上西楼，望尽天涯路。 文件描述符 linux文件描述符：可以理解为linux跟踪打开文件，而分配的一个数字，这个数字有点类似c]]></description>
+</item><item>
     <title>Pwnable Caov</title>
     <link>http://example.org/pwnable-caov/</link>
     <pubDate>Fri, 16 Jul 2021 14:28:09 &#43;0800</pubDate>
@@ -67,12 +74,5 @@
     <author>作者</author>
     <guid>http://example.org/%E5%BC%BA%E7%BD%91%E6%9D%AF3th-wp/</guid>
     <description><![CDATA[<p>蓝叶春葳蕤，桂华秋皎洁。</p>]]></description>
-</item><item>
-    <title>DASCTF-7月赛</title>
-    <link>http://example.org/dasctf-7%E6%9C%88%E8%B5%9B/</link>
-    <pubDate>Sat, 25 Jul 2020 15:35:01 &#43;0000</pubDate>
-    <author>作者</author>
-    <guid>http://example.org/dasctf-7%E6%9C%88%E8%B5%9B/</guid>
-    <description><![CDATA[<p>欲穷千里目，更上一层楼。		——《登鹳雀楼》王之涣</p>]]></description>
 </item></channel>
 </rss>

